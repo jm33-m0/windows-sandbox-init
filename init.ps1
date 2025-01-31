@@ -5,11 +5,13 @@ Param(
 )
 Set-ExecutionPolicy Unrestricted -Scope LocalMachine
 
+# Paths
 $logFile = "$Home\Desktop\init_log.txt"
 $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
-$ghidraPath = "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC"
-$diePath = "$env:USERPROFILE\Desktop\die_win64_portable_3.10_x64"
+$ghidraPath = "$env:USERPROFILE\Desktop\ghidra"
+$diePath = "$env:USERPROFILE\Desktop\detect-it-easy"
 $sysinternalsPath = "$env:USERPROFILE\Desktop\Sysinternals"
+$x64dbgPath = "$env:USERPROFILE\Desktop\x64dbg"
 
 function log_message {
     param (
@@ -133,6 +135,14 @@ Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
     if (check_error "Failed to unzip $($_.FullName) to $destination using 7-Zip") {
         log_message "Unzipped $($_.FullName) to $destination using 7-Zip"
     }
+    # Check if the extraction created an extra directory level
+    $extractedItems = Get-ChildItem -Path $destination
+    if ($extractedItems.Count -eq 1 -and $extractedItems[0].PSIsContainer) {
+        $innerFolder = $extractedItems[0].FullName
+        Get-ChildItem -Path $innerFolder | Move-Item -Destination $destination -Force
+        Remove-Item -Path $innerFolder -Force
+        log_message "Moved contents of $innerFolder to $destination"
+    }
 }
 # Make shortcut for 7-Zip on desktop
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe" -name "7-Zip"
@@ -145,16 +155,16 @@ if (check_error "Failed to copy lauch.properties to Ghidra directory") {
 create_shortcut -targetPath "$ghidraPath\ghidraRun.bat" -iconPath "$ghidraPath\support\ghidra.ico" -name "Ghidra"
 
 # Configure x64dbg
-Start-Process -FilePath "$env:USERPROFILE\Desktop\snapshot_2025-01-17_12-45\release\x96dbg.exe" -Wait
+Start-Process -FilePath "$x64dbgPath\release\x96dbg.exe" -Wait
 
 # Configure DIE
 create_shortcut -targetPath "$diePath\die.exe" -name "Detect It Easy"
 
 # Configure Sysinternals
-create_shortcut -targetPath "$sysinternalsPath/procexp.exe" -name "Process Explorer"
-create_shortcut -targetPath "$sysinternalsPath/procmon.exe" -name "Process Monitor"
-create_shortcut -targetPath "$sysinternalsPath/tcpview.exe" -name "TCPView"
-create_shortcut -targetPath "$sysinternalsPath/autoruns.exe" -name "Autoruns"
+create_shortcut -targetPath "$sysinternalsPath/procexp64.exe" -name "Process Explorer"
+create_shortcut -targetPath "$sysinternalsPath/procmon64.exe" -name "Process Monitor"
+create_shortcut -targetPath "$sysinternalsPath/tcpview64.exe" -name "TCPView"
+create_shortcut -targetPath "$sysinternalsPath/autoruns64.exe" -name "Autoruns"
 
 log_message "Script completed."
 show_completion_message
