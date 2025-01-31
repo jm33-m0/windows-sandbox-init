@@ -119,6 +119,9 @@ function show_completion_message {
     [System.Windows.MessageBox]::Show('All tasks are completed.', 'Completion', 'OK', 'Information')
 }
 
+# Create a shortcut for MALWARE directory on the desktop
+create_shortcut -targetPath $RootPath\MALWARE -name "MALWARE"
+
 # Run all EXE files in the source directory with /S argument
 process_files -path $PackagePath -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
 
