@@ -6,6 +6,10 @@ Param(
 Set-ExecutionPolicy Unrestricted -Scope LocalMachine
 
 $logFile = "$Home\Desktop\init_log.txt"
+$sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
+$ghidraPath = "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC"
+$diePath = "$env:USERPROFILE\Desktop\die_win64_portable_3.10_x64"
+
 function log_message {
     param (
         [string] $message
@@ -57,18 +61,15 @@ function create_shortcut {
         [string] $iconPath
     )
     $desktopPath = [System.IO.Path]::Combine($env:USERPROFILE, "Desktop")
-    $shortcutPath = [System.IO.Path]::Combine($desktopPath, [System.IO.Path]::GetFileNameWithoutExtension($targetPath) + ".lnk")
+    $shortcutPath = [System.IO.Path]::Combine($desktopPath, $name + ".lnk")
     $wshShell = New-Object -ComObject WScript.Shell
     $shortcut = $wshShell.CreateShortcut($shortcutPath)
     $shortcut.TargetPath = $targetPath
     if ($iconPath) {
         $shortcut.IconLocation = $iconPath
     }
-    if ($name) {
-        $shortcut.Description = $name
-    }
     $shortcut.Save()
-    log_message "Created shortcut for $targetPath on desktop."
+    log_message "Created shortcut for $targetPath on desktop with name $name."
 }
 
 function install_msi {
@@ -125,7 +126,6 @@ if (check_error "Failed to copy config.xml to Notepad++ directory") {
 create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe"
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
-$sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
 Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
     $destination = Join-Path "$Home\Desktop" ($_.BaseName)
     Start-Process -FilePath $sevenZipPath -ArgumentList "x", $_.FullName, "-o$destination", "-y" -Wait
@@ -134,10 +134,9 @@ Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
     }
 }
 # Make shortcut for 7-Zip on desktop
-create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe"
+create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe" -name "7-Zip"
 
 # Configure Ghidra
-$ghidraPath = "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC"
 Copy-Item -Path $Src\lauch.properties -Destination "$ghidraPath\support" -Force
 if (check_error "Failed to copy lauch.properties to Ghidra directory") {
     log_message "Copied lauch.properties to Ghidra directory."
@@ -148,7 +147,6 @@ create_shortcut -targetPath "$ghidraPath\ghidraRun.bat" -iconPath "$ghidraPath\s
 Start-Process -FilePath "$env:USERPROFILE\Desktop\snapshot_2025-01-17_12-45\release\x96dbg.exe" -Wait
 
 # Configure DIE
-$diePath = "$env:USERPROFILE\Desktop\die_win64_portable_3.10_x64"
 create_shortcut -targetPath "$diePath\die.exe" -name "Detect It Easy"
 
 log_message "Script completed."
