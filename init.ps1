@@ -97,6 +97,11 @@ function process_files {
     }
 }
 
+function show_completion_message {
+    Add-Type -AssemblyName PresentationFramework
+    [System.Windows.MessageBox]::Show('All tasks are completed.', 'Completion', 'OK', 'Information')
+}
+
 # Install all MSI files in the source directory
 process_files -path $Src -filter "*.msi" -callback_function { param($filePath) install_msi $filePath }
 
@@ -124,3 +129,4 @@ Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe"
 
 log_message "Script completed."
+show_completion_message
