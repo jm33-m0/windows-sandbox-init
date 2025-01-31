@@ -52,13 +52,21 @@ function config_explorer() {
 
 function create_shortcut {
     param (
-        [string] $targetPath
+        [string] $targetPath,
+        [string] $name, 
+        [string] $iconPath
     )
     $desktopPath = [System.IO.Path]::Combine($env:USERPROFILE, "Desktop")
     $shortcutPath = [System.IO.Path]::Combine($desktopPath, [System.IO.Path]::GetFileNameWithoutExtension($targetPath) + ".lnk")
     $wshShell = New-Object -ComObject WScript.Shell
     $shortcut = $wshShell.CreateShortcut($shortcutPath)
     $shortcut.TargetPath = $targetPath
+    if ($iconPath) {
+        $shortcut.IconLocation = $iconPath
+    }
+    if ($name) {
+        $shortcut.Description = $name
+    }
     $shortcut.Save()
     log_message "Created shortcut for $targetPath on desktop."
 }
@@ -129,10 +137,19 @@ Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe"
 
 # Configure Ghidra
-Copy-Item -Path $Src\lauch.properties -Destination "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC\support" -Force
+$ghidraPath = "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC"
+Copy-Item -Path $Src\lauch.properties -Destination "$ghidraPath\support" -Force
 if (check_error "Failed to copy lauch.properties to Ghidra directory") {
     log_message "Copied lauch.properties to Ghidra directory."
 }
+create_shortcut -targetPath "$ghidraPath\ghidraRun.bat" -iconPath "$ghidraPath\support\ghidra.ico" -name "Ghidra"
+
+# Configure x64dbg
+Start-Process -FilePath "$env:USERPROFILE\Desktop\snapshot_2025-01-17_12-45\release\x96dbg.exe" -Wait
+
+# Configure DIE
+$diePath = "$env:USERPROFILE\Desktop\die_win64_portable_3.10_x64"
+create_shortcut -targetPath "$diePath\die.exe" -name "Detect It Easy"
 
 log_message "Script completed."
 show_completion_message
