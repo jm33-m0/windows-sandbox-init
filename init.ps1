@@ -9,6 +9,7 @@ $logFile = "$Home\Desktop\init_log.txt"
 $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
 $ghidraPath = "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC"
 $diePath = "$env:USERPROFILE\Desktop\die_win64_portable_3.10_x64"
+$sysinternalsPath = "$env:USERPROFILE\Desktop\Sysinternals"
 
 function log_message {
     param (
@@ -148,6 +149,12 @@ Start-Process -FilePath "$env:USERPROFILE\Desktop\snapshot_2025-01-17_12-45\rele
 
 # Configure DIE
 create_shortcut -targetPath "$diePath\die.exe" -name "Detect It Easy"
+
+# Configure Sysinternals
+create_shortcut -targetPath "$sysinternalsPath/procexp.exe" -name "Process Explorer"
+create_shortcut -targetPath "$sysinternalsPath/procmon.exe" -name "Process Monitor"
+create_shortcut -targetPath "$sysinternalsPath/tcpview.exe" -name "TCPView"
+create_shortcut -targetPath "$sysinternalsPath/autoruns.exe" -name "Autoruns"
 
 log_message "Script completed."
 show_completion_message
