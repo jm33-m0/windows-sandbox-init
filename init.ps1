@@ -123,7 +123,7 @@ if (check_error "Failed to copy config.xml to Notepad++ directory") {
     log_message "Copied config.xml to Notepad++ directory."
 }
 # Make shortcut for Notepad++ on desktop
-create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe"
+create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "Notepad++"
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
