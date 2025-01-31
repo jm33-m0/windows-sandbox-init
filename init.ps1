@@ -20,10 +20,12 @@ function check_error {
     param (
         [string] $errorMessage
     )
-    if ($LASTEXITCODE -ne 0) {
-        log_message $errorMessage
-        throw $errorMessage
+    if (-not $?) {
+        $actualError = $Error[0].ToString()
+        log_message "$errorMessage $actualError"
+        return $false
     }
+    return $true
 }
 
 log_message "Script started."
@@ -50,9 +52,10 @@ function config_explorer() {
 
 function create_shortcut {
     param (
-        [string] $shortcutPath,
         [string] $targetPath
     )
+    $desktopPath = [System.IO.Path]::Combine($env:USERPROFILE, "Desktop")
+    $shortcutPath = [System.IO.Path]::Combine($desktopPath, [System.IO.Path]::GetFileNameWithoutExtension($targetPath) + ".lnk")
     $wshShell = New-Object -ComObject WScript.Shell
     $shortcut = $wshShell.CreateShortcut($shortcutPath)
     $shortcut.TargetPath = $targetPath
@@ -66,8 +69,9 @@ function install_msi {
     )
     log_message "Installing MSI: $msiPath"
     Start-Process -FilePath "msiexec.exe" -ArgumentList "/quiet", "/norestart", "/i", $msiPath -Wait
-    check_error "Failed to install $msiPath"
-    log_message "Installed $msiPath"
+    if (check_error "Failed to install $msiPath") {
+        log_message "Installed $msiPath"
+    }
 }
 
 function install_nsis {
@@ -76,8 +80,9 @@ function install_nsis {
     )
     log_message "Installing $nsisPath"
     Start-Process -FilePath $nsisPath -ArgumentList "/S" -Wait
-    check_error "Failed to install $nsisPath"
-    log_message "Installed $nsisPath"
+    if (check_error "Failed to install $nsisPath") {
+        log_message "Installed $nsisPath"
+    }
 }
 
 function process_files {
@@ -100,20 +105,22 @@ process_files -path $Src -filter "*.exe" -callback_function { param($filePath) i
 
 # Config Notepad++ with config.xml
 Copy-Item -Path .\config.xml -Destination "$env:APPDATA\Notepad++\config.xml" -Force
-check_error "Failed to copy config.xml to Notepad++ directory"
-log_message "Copied config.xml to Notepad++ directory."
+if (check_error "Failed to copy config.xml to Notepad++ directory") {
+    log_message "Copied config.xml to Notepad++ directory."
+}
 # Make shortcut for Notepad++ on desktop
-create_shortcut -shortcutPath "$env:HOME\Desktop\Notepad++.lnk" -targetPath "C:\Program Files\Notepad++\notepad++.exe"
+create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe"
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
 Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
     $destination = Join-Path "$Home\Desktop" ($_.BaseName)
     Start-Process -FilePath $sevenZipPath -ArgumentList "x", $_.FullName, "-o$destination", "-y" -Wait
-    check_error "Failed to unzip $($_.FullName) to $destination using 7-Zip"
-    log_message "Unzipped $($_.FullName) to $destination using 7-Zip"
+    if (check_error "Failed to unzip $($_.FullName) to $destination using 7-Zip") {
+        log_message "Unzipped $($_.FullName) to $destination using 7-Zip"
+    }
 }
 # Make shortcut for 7-Zip on desktop
-create_shortcut -shortcutPath "$env:HOME\Desktop\7-Zip.lnk" -targetPath "C:\Program Files\7-Zip\7zFM.exe"
+create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe"
 
 log_message "Script completed."
