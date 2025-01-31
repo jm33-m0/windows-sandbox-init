@@ -128,5 +128,11 @@ Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
 # Make shortcut for 7-Zip on desktop
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe"
 
+# Configure Ghidra
+Copy-Item -Path $Src\lauch.properties -Destination "$env:USERPROFILE\Desktop\ghidra_11.2.1_PUBLIC\support" -Force
+if (check_error "Failed to copy lauch.properties to Ghidra directory") {
+    log_message "Copied lauch.properties to Ghidra directory."
+}
+
 log_message "Script completed."
 show_completion_message
