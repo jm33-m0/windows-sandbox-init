@@ -109,7 +109,7 @@ process_files -path $Src -filter "*.msi" -callback_function { param($filePath) i
 process_files -path $Src -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
 
 # Config Notepad++ with config.xml
-Copy-Item -Path .\config.xml -Destination "$env:APPDATA\Notepad++\config.xml" -Force
+Copy-Item -Path $Src\config.xml -Destination "$env:APPDATA\Notepad++\config.xml" -Force
 if (check_error "Failed to copy config.xml to Notepad++ directory") {
     log_message "Copied config.xml to Notepad++ directory."
 }
