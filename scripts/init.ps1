@@ -1,7 +1,9 @@
 [CmdletBinding(PositionalBinding = $false)]
 Param(
     [Parameter(Mandatory = $false)]
-    [string] $Src = "C:\tooling"
+    [string] $RootPath = "C:\tooling",
+    [string] $PackagePath = "C:\tooling\packages",
+    [string] $ScriptPath = "C:\tooling\scripts"
 )
 Set-ExecutionPolicy Unrestricted -Scope LocalMachine
 
@@ -12,6 +14,9 @@ $ghidraPath = "$env:USERPROFILE\Desktop\ghidra"
 $diePath = "$env:USERPROFILE\Desktop\detect-it-easy"
 $sysinternalsPath = "$env:USERPROFILE\Desktop\Sysinternals"
 $x64dbgPath = "$env:USERPROFILE\Desktop\x64dbg"
+
+# cd to the script directory
+Set-Location -Path $ScriptPath -ErrorAction Stop
 
 function log_message {
     param (
@@ -114,14 +119,14 @@ function show_completion_message {
     [System.Windows.MessageBox]::Show('All tasks are completed.', 'Completion', 'OK', 'Information')
 }
 
-# Install all MSI files in the source directory
-process_files -path $Src -filter "*.msi" -callback_function { param($filePath) install_msi $filePath }
-
 # Run all EXE files in the source directory with /S argument
-process_files -path $Src -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
+process_files -path $PackagePath -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
+
+# Install all MSI files in the source directory
+process_files -path $PackagePath -filter "*.msi" -callback_function { param($filePath) install_msi $filePath }
 
 # Config Notepad++ with config.xml
-Copy-Item -Path $Src\config.xml -Destination "$env:APPDATA\Notepad++\config.xml" -Force
+Copy-Item -Path $RootPath\npp_config\config.xml -Destination "$env:APPDATA\Notepad++\config.xml" -Force
 if (check_error "Failed to copy config.xml to Notepad++ directory") {
     log_message "Copied config.xml to Notepad++ directory."
 }
@@ -129,7 +134,7 @@ if (check_error "Failed to copy config.xml to Notepad++ directory") {
 create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "Notepad++"
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
-Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
+Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
     $destination = Join-Path "$Home\Desktop" ($_.BaseName)
     Start-Process -FilePath $sevenZipPath -ArgumentList "x", $_.FullName, "-o$destination", "-y" -Wait
     if (check_error "Failed to unzip $($_.FullName) to $destination using 7-Zip") {
@@ -148,7 +153,7 @@ Get-ChildItem -Path $Src -Filter *.zip | ForEach-Object {
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe" -name "7-Zip"
 
 # Configure Ghidra
-Copy-Item -Path $Src\lauch.properties -Destination "$ghidraPath\support" -Force
+Copy-Item -Path $RootPath\ghidra_config\lauch.properties -Destination "$ghidraPath\support" -Force
 if (check_error "Failed to copy lauch.properties to Ghidra directory") {
     log_message "Copied lauch.properties to Ghidra directory."
 }

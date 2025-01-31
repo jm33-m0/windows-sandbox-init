@@ -1,3 +1,6 @@
+# Change to the packages directory
+Set-Location -Path "..\packages" -ErrorAction Stop
+
 # URLs and filenames
 $files = @(
     @{ url = "https://www.voidtools.com/Everything-1.4.1.1026.x64-Setup.exe"; filename = "Everything.exe"; checksum = "" },

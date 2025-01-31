@@ -4,4 +4,4 @@ This project aims to automatically configure a Windows Sanbox for malware analys
 
 Please read the script and modify it before using.
 
-![screenshot](./screenshot.png)
+![screenshot](./screenshots/screenshot.png)
