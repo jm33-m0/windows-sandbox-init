@@ -47,6 +47,11 @@ function config_explorer() {
     Set-Itemproperty -path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -value 0
 }
 
+function restart_explorer {
+    Stop-Process -Name explorer -Force
+    Start-Process explorer
+}
+
 function get_basename {
     param (
         [string] $filePath
@@ -164,6 +169,7 @@ set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++
 
 # Configure Explorer
 config_explorer
+restart_explorer
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
@@ -221,6 +227,9 @@ if ($path -notlike "*$javaHome*") {
         log_message "Added JAVA_HOME to system PATH"
     }
 }
+
+# Configure LibreOffice
+create_shortcut -targetPath "$desktopPath\LibreOffice\LibreOfficeBasePortable.exe" -name "LibreOffice"
 
 log_message "Script completed."
 show_message_box -message 'All tasks are completed, some MSI packages might still be installed in the background' -title 'Completion' -button 'OK' -icon 'Information'
