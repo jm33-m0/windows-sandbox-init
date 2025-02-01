@@ -43,13 +43,15 @@ function check_error {
 
 log_message "Script started."
 
+# Start timer
+$scriptStartTime = Get-Date
+
 function config_explorer() {
     Set-Itemproperty -path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -value 0
 }
 
 function restart_explorer {
     Stop-Process -Name explorer -Force
-    Start-Process explorer
 }
 
 function get_basename {
@@ -168,8 +170,8 @@ set_default_app -extension ".txt" -appPath "C:\Program Files\Notepad++\notepad++
 set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++.exe"
 
 # Configure Explorer
-config_explorer
-restart_explorer
+# config_explorer
+# restart_explorer
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
@@ -231,5 +233,16 @@ if ($path -notlike "*$javaHome*") {
 # Configure LibreOffice
 create_shortcut -targetPath "$desktopPath\LibreOffice\LibreOfficePortable.exe" -name "LibreOffice"
 
+# Configure ImHex
+create_shortcut -targetPath "$desktopPath\ImHex\imhex-gui.exe" -name "ImHex"
+New-Item -Path "$desktopPath\ImHex\config" -ItemType Directory -Force
+Copy-Item $RootPath\imhex_config\settings.json -Destination "$desktopPath\ImHex\config" -Force
+
 log_message "Script completed."
-show_message_box -message 'All tasks are completed, some MSI packages might still be installed in the background' -title 'Completion' -button 'OK' -icon 'Information'
+
+# Calculate time spent
+$scriptEndTime = Get-Date
+$timeSpent = $scriptEndTime - $scriptStartTime
+$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds."
+
+show_message_box -message $timeSpentMessage -title 'Completion' -button 'OK' -icon 'Information'
