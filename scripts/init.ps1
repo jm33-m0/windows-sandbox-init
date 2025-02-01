@@ -99,14 +99,13 @@ function prompt_yes_no {
     return $result -eq [System.Windows.MessageBoxResult]::Yes
 }
 
-function prompt_installation {
+function install_portable {
     param (
         [string] $nsisPath,
         [string] $message,
         [string] $title
     )
     if (-not (prompt_yes_no -message $message -title $title)) {
-        log_message "Skipped installation of $title."
         Copy-Item -Path $nsisPath -Destination $desktopPath -Force
         return $false
     }
@@ -123,13 +122,15 @@ function install_nsis {
 
     # needs manual intervention
     if ($nsisPath -like "*Wireshark.exe") { 
-        if (-not (prompt_installation -nsisPath $nsisPath -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
+        if (-not (install_portable -nsisPath $nsisPath -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
+            log_message "Skipped installation of Wireshark."
             return
         }
         $arguments = ""
     }
     if ($nsisPath -like "*LibreOffice.exe") {
-        if (-not (prompt_installation -nsisPath $nsisPath -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
+        if (-not (install_portable -nsisPath $nsisPath -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
+            log_message "Skipped installation of LibreOffice."
             return
         }
         $arguments = ""
