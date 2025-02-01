@@ -94,14 +94,33 @@ function install_nsis {
         [string] $nsisPath
     )
     log_message "Installing $nsisPath"
-    
+
+    $arguments = "/S"
     # needs manual intervention
     if ($nsisPath -like "*Wireshark.exe") { 
-        create_shortcut -targetPath $nsisPath -name "Wireshark Installer"
-        return
+        if (-not (prompt_yes_no -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
+            create_shortcut -targetPath $nsisPath -name "Wireshark Installer"
+            return
+        }
+        $arguments = ""
     }
-    $arguments = "/S"
-    Start-Process -FilePath $nsisPath -ArgumentList $arguments -Wait
+
+    if ($nsisPath -like "*LibreOffice.exe") {
+        if (-not (prompt_yes_no -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
+            log_message "Skipped installation of LibreOffice."
+            create_shortcut -targetPath $nsisPath -name "LibreOffice Installer"
+            return
+        }
+        $arguments = ""
+    }
+
+    if ($arguments -eq "/S") {
+        log_message "Installing $nsisPath silently."
+        Start-Process -FilePath $nsisPath -ArgumentList $arguments
+    }
+    else {
+        Start-Process -FilePath $nsisPath
+    }
     if (check_error "Failed to install $nsisPath") {
         log_message "Installed $nsisPath"
     }
@@ -128,6 +147,16 @@ function show_message_box {
     )
     Add-Type -AssemblyName PresentationFramework
     [System.Windows.MessageBox]::Show($message, $title, $button, $icon)
+}
+
+function prompt_yes_no {
+    param (
+        [string] $message,
+        [string] $title = "Prompt"
+    )
+    Add-Type -AssemblyName PresentationFramework
+    $result = [System.Windows.MessageBox]::Show($message, $title, "YesNo", "Question")
+    return $result -eq [System.Windows.MessageBoxResult]::Yes
 }
 
 function set_default_app {
@@ -235,9 +264,6 @@ if ($path -notlike "*$javaHome*") {
         log_message "Added JAVA_HOME to system PATH"
     }
 }
-
-# Configure LibreOffice
-create_shortcut -targetPath "$desktopPath\LibreOffice\LibreOfficePortable.exe" -name "LibreOffice"
 
 # Configure ImHex
 create_shortcut -targetPath "$desktopPath\ImHex\imhex-gui.exe" -name "ImHex"
