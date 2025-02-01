@@ -44,23 +44,7 @@ function check_error {
 log_message "Script started."
 
 function config_explorer() {
-    # Set Explorer to show file extension names and all hidden files including system files
-    $showAllFiles = @(
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Hidden",
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ShowSuperHidden",
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\HideFileExt"
-    )
-    $values = 1, 1, 0
-    $propertyNames = "Hidden", "ShowSuperHidden", "HideFileExt"
-    for ($i = 0; $i -lt $showAllFiles.Length; $i++) {
-        if (-not (Test-Path $showAllFiles[$i])) {
-            New-Item -Path $showAllFiles[$i] -Force | Out-Null
-            log_message "Created registry path: $showAllFiles[$i]"
-        }
-        Set-ItemProperty -Path $showAllFiles[$i] -Name $propertyNames[$i] -Value $values[$i]
-        check_error "Failed to set $propertyNames[$i] to $values[$i] at $showAllFiles[$i]"
-        log_message "Set $propertyNames[$i] to $values[$i] at $showAllFiles[$i]"
-    }
+    Set-Itemproperty -path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -value 0
 }
 
 function get_basename {
@@ -132,6 +116,31 @@ function show_message_box {
     [System.Windows.MessageBox]::Show($message, $title, $button, $icon)
 }
 
+function set_default_app {
+    param (
+        [string] $extension,
+        [string] $appPath
+    )
+    $extensionKey = "HKCU:\Software\Classes\$extension"
+    $appKey = "HKCU:\Software\Classes\$extension\shell\open\command"
+    if (-not (Test-Path $extensionKey)) {
+        New-Item -Path $extensionKey -Force | Out-Null
+        log_message "Created registry path: $extensionKey"
+    }
+    Set-ItemProperty -Path $extensionKey -Name "(Default)" -Value "Notepad++_file"
+    if (check_error "Failed to set default app for $extension") {
+        log_message "Set default app for $extension"
+    }
+    if (-not (Test-Path $appKey)) {
+        New-Item -Path $appKey -Force | Out-Null
+        log_message "Created registry path: $appKey"
+    }
+    Set-ItemProperty -Path $appKey -Name "(Default)" -Value "`"$appPath`" `"%1`""
+    if (check_error "Failed to set open command for $extension") {
+        log_message "Set open command for $extension"
+    }
+}
+
 # Create a shortcut for MALWARE directory on the desktop
 create_shortcut -targetPath $RootPath\MALWARE -name "MALWARE"
 
@@ -148,6 +157,13 @@ if (check_error "Failed to copy config files to Notepad++ directory") {
 }
 # Make shortcut for Notepad++ on desktop
 create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "Notepad++"
+
+# Make Notepad++ the default app for .txt and .ini files
+set_default_app -extension ".txt" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+
+# Configure Explorer
+config_explorer
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
@@ -176,8 +192,8 @@ if (check_error "Failed to copy config files to Ghidra directory") {
 create_shortcut -targetPath "$ghidraPath\ghidraRun.bat" -iconPath "$ghidraPath\support\ghidra.ico" -name "Ghidra"
 
 # Configure x64dbg
-show_message_box -message "x64dbg will be configured next. Please follow the instructions in the GUI window."
-Start-Process -FilePath "$x64dbgPath\release\x96dbg.exe" -Wait
+create_shortcut -targetPath "$x64dbgPath\release\x64\x64dbg.exe" -name "x64dbg"
+create_shortcut -targetPath "$x64dbgPath\release\x32\x32dbg.exe" -name "x32dbg"
 
 # Configure DIE
 create_shortcut -targetPath "$diePath\die.exe" -name "Detect It Easy"
@@ -207,4 +223,4 @@ if ($path -notlike "*$javaHome*") {
 }
 
 log_message "Script completed."
-show_message_box -message 'All tasks are completed.' -title 'Completion' -button 'OK' -icon 'Information'
+show_message_box -message 'All tasks are completed, some MSI packages might still be installed in the background' -title 'Completion' -button 'OK' -icon 'Information'
