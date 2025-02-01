@@ -83,7 +83,7 @@ function install_msi {
         [string] $msiPath
     )
     log_message "Installing MSI: $msiPath"
-    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", $msiPath, "/qn", "/norestart"
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", $msiPath, "/qn", "/norestart" -Wait
     if (check_error "Failed to install $msiPath") {
         log_message "Installed $msiPath"
     }
@@ -94,8 +94,14 @@ function install_nsis {
         [string] $nsisPath
     )
     log_message "Installing $nsisPath"
-    $arguments = if ($nsisPath -like "*npcap.exe") { "" } else { "/S" }
-    Start-Process -FilePath $nsisPath -ArgumentList $arguments
+    
+    # needs manual intervention
+    if ($nsisPath -like "npcap.exe") { 
+        Copy-Item -Path $nsisPath -Destination $desktopPath -Force
+        return
+    }
+    $arguments = "/S"
+    Start-Process -FilePath $nsisPath -ArgumentList $arguments -Wait
     if (check_error "Failed to install $nsisPath") {
         log_message "Installed $nsisPath"
     }
@@ -247,6 +253,6 @@ log_message "Script completed."
 # Calculate time spent
 $scriptEndTime = Get-Date
 $timeSpent = $scriptEndTime - $scriptStartTime
-$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds."
+$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds. You will need to run npcap.exe manually if you need to use Wireshark."
 
 show_message_box -message $timeSpentMessage -title 'Completion' -button 'OK' -icon 'Information'
