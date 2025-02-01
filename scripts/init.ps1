@@ -94,7 +94,8 @@ function install_nsis {
         [string] $nsisPath
     )
     log_message "Installing $nsisPath"
-    Start-Process -FilePath $nsisPath -ArgumentList "/S"
+    $arguments = if ($nsisPath -like "*npcap.exe") { "" } else { "/S" }
+    Start-Process -FilePath $nsisPath -ArgumentList $arguments
     if (check_error "Failed to install $nsisPath") {
         log_message "Installed $nsisPath"
     }
