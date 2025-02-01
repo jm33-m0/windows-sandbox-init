@@ -211,7 +211,7 @@ process_files -path $PackagePath -filter "*.msi" -callback_function { param($fil
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
     $destination = Join-Path $desktopPath ($_.BaseName)
-    Start-Process -FilePath $sevenZipPath -ArgumentList "x", $_.FullName, "-o$destination", "-y" -Wait
+    Start-Process -FilePath $sevenZipPath -ArgumentList "x", $_.FullName, "-o$destination", "-y" -NoNewWindow -Wait
     if (check_error "Failed to unzip $($_.FullName) to $destination using 7-Zip") {
         log_message "Unzipped $($_.FullName) to $destination using 7-Zip"
     }
