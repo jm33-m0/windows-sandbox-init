@@ -46,10 +46,6 @@ log_message "Script started."
 # Start timer
 $scriptStartTime = Get-Date
 
-function config_explorer() {
-    Set-Itemproperty -path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -value 0
-}
-
 function restart_explorer {
     Stop-Process -Name explorer -Force
 }
@@ -200,6 +196,7 @@ function npp_setup {
     # Make Notepad++ the default app for .txt and .ini files
     set_default_app -extension ".txt" -appPath "C:\Program Files\Notepad++\notepad++.exe"
     set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+    restart_explorer
 }
 
 # Create a shortcut for MALWARE directory on the desktop
@@ -279,12 +276,10 @@ New-Item -Path "$desktopPath\ImHex\config" -ItemType Directory -Force
 Copy-Item $RootPath\imhex_config\settings.json -Destination "$desktopPath\ImHex\config" -Force
 
 # Configure LibreOffice
-create_shortcut -targetPath "$desktopPath\LibreOffice\LibreOfficePortable.exe" -name "LibreOffice"
+create_shortcut -targetPath "$desktopPath\LibreOfficePortable\LibreOfficePortable.exe" -name "LibreOffice"
 
 # Configure Wireshark
-create_shortcut -targetPath "$desktopPath\Wireshark\WiresharkPortable64.exe" -name "Wireshark"
-
-log_message "Script completed."
+create_shortcut -targetPath "$desktopPath\WiresharkPortable\WiresharkPortable64.exe" -name "Wireshark"
 
 # Calculate time spent
 $scriptEndTime = Get-Date
@@ -296,6 +291,7 @@ if ($timeSpent.Hours -gt 0) {
 if ($timeSpent.Minutes -gt 0) {
     $timeSpentMessage += "$($timeSpent.Minutes) minutes, "
 }
-$timeSpentMessage += "$($timeSpent.Seconds) seconds. Some packages can be manually installed."
+$timeSpentMessage += "$($timeSpent.Seconds) seconds."
 
+log_message "$timeSpentMessage"
 show_message_box -message $timeSpentMessage -title 'Completion' -button 'OK' -icon 'Information'
