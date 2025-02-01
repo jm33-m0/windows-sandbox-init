@@ -89,6 +89,30 @@ function install_msi {
     }
 }
 
+function prompt_yes_no {
+    param (
+        [string] $message,
+        [string] $title = "Prompt"
+    )
+    Add-Type -AssemblyName PresentationFramework
+    $result = [System.Windows.MessageBox]::Show($message, $title, "YesNo", "Question")
+    return $result -eq [System.Windows.MessageBoxResult]::Yes
+}
+
+function prompt_installation {
+    param (
+        [string] $nsisPath,
+        [string] $message,
+        [string] $title
+    )
+    if (-not (prompt_yes_no -message $message -title $title)) {
+        log_message "Skipped installation of $title."
+        Copy-Item -Path $nsisPath -Destination $desktopPath -Force
+        return $false
+    }
+    return $true
+}
+
 function install_nsis {
     param (
         [string] $nsisPath
@@ -96,29 +120,28 @@ function install_nsis {
     log_message "Installing $nsisPath"
 
     $arguments = "/S"
+
     # needs manual intervention
     if ($nsisPath -like "*Wireshark.exe") { 
-        if (-not (prompt_yes_no -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
-            create_shortcut -targetPath $nsisPath -name "Wireshark Installer"
+        if (-not (prompt_installation -nsisPath $nsisPath -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
             return
         }
         $arguments = ""
     }
-
     if ($nsisPath -like "*LibreOffice.exe") {
-        if (-not (prompt_yes_no -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
-            log_message "Skipped installation of LibreOffice."
-            create_shortcut -targetPath $nsisPath -name "LibreOffice Installer"
+        if (-not (prompt_installation -nsisPath $nsisPath -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
             return
         }
         $arguments = ""
     }
 
     if ($arguments -eq "/S") {
+        # install silently
         log_message "Installing $nsisPath silently."
         Start-Process -FilePath $nsisPath -ArgumentList $arguments
     }
     else {
+        # install manually
         Start-Process -FilePath $nsisPath
     }
     if (check_error "Failed to install $nsisPath") {
@@ -147,16 +170,6 @@ function show_message_box {
     )
     Add-Type -AssemblyName PresentationFramework
     [System.Windows.MessageBox]::Show($message, $title, $button, $icon)
-}
-
-function prompt_yes_no {
-    param (
-        [string] $message,
-        [string] $title = "Prompt"
-    )
-    Add-Type -AssemblyName PresentationFramework
-    $result = [System.Windows.MessageBox]::Show($message, $title, "YesNo", "Question")
-    return $result -eq [System.Windows.MessageBoxResult]::Yes
 }
 
 function set_default_app {
@@ -275,6 +288,6 @@ log_message "Script completed."
 # Calculate time spent
 $scriptEndTime = Get-Date
 $timeSpent = $scriptEndTime - $scriptStartTime
-$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds. You will need to run Wireshark.exe to install Wireshark manually because its npcap dependency cannot be silently installed."
+$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds. Some packages can be manually installed."
 
 show_message_box -message $timeSpentMessage -title 'Completion' -button 'OK' -icon 'Information'
