@@ -15,3 +15,4 @@ Make sure you have Windows Sandbox enabled.
 ## Screenshots
 
 ![screenshot](./screenshots/screenshot.png)
+![tools](./screenshots/tools.png)
