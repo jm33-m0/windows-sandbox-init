@@ -14,6 +14,7 @@ $files = @(
     @{ url = "https://download.documentfoundation.org/libreoffice/portable/24.8.2/LibreOfficePortable_24.8.2_MultilingualStandard.paf.exe"; filename = "LibreOffice.exe"; checksum = "" },
     @{ url = "https://github.com/WerWolv/ImHex/releases/download/v1.36.2/imhex-1.36.2-Windows-Portable-NoGPU-x86_64.zip"; filename = "imhex.zip"; checksum = "" },
     @{ url = "https://2.na.dl.wireshark.org/win64/Wireshark-4.4.3-x64.exe"; filename = "Wireshark.exe"; checksum = "" },
+    @{ url = "https://www.autohotkey.com/download/ahk-v2.exe"; filename = "AutoHotKey.exe"; checksum = "" },
     @{ url = "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/a1aedc61f794eb66fbcdad6aaf8a8be3/microsoft-jdk-21.0.6-windows-x64.zip"; filename = "jdk.zip"; checksum = "" }
 )
 
