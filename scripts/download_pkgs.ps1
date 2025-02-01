@@ -8,11 +8,11 @@ $files = @(
     @{ url = "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.2.1_build/ghidra_11.2.1_PUBLIC_20241105.zip"; filename = "ghidra.zip"; checksum = "" },
     @{ url = "https://github.com/horsicq/DIE-engine/releases/download/3.10/die_win64_portable_3.10_x64.zip"; filename = "detect-it-easy.zip"; checksum = "" },
     @{ url = "https://download.sysinternals.com/files/SysinternalsSuite.zip"; filename = "Sysinternals.zip"; checksum = "" },
-    @{ url = "https://github.com/ip7z/7zip/releases/download/24.09/7z2409-x64.msi"; filename = "7z.msi"; checksum = "checksum6" },
+    @{ url = "https://github.com/ip7z/7zip/releases/download/24.09/7z2409-x64.exe"; filename = "7z.exe"; checksum = "" },
     @{ url = "https://github.com/x64dbg/x64dbg/releases/download/snapshot/snapshot_2025-01-17_12-45.zip"; filename = "x64dbg.zip"; checksum = "" },
     @{ url = "https://github.com/x64dbg/x64dbg/releases/download/snapshot/symbols-snapshot_2025-01-17_12-45.zip"; filename = "x64dbg_symbols.zip"; checksum = "" },
-    @{ url = "https://tdf.jensgutermuth.de/libreoffice/stable/24.8.4/win/x86_64/LibreOffice_24.8.4_Win_x86-64.msi"; filename = "LibreOffice.msi"; checksum = "" },
-    @{ url = "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/2e6485db3be11cdad7550d17c5196767/microsoft-jdk-21.0.6-windows-x64.msi"; filename = "jdk.msi"; checksum = "" }
+    @{ url = "https://www.libreoffice.org/donate/dl/win-x86_64/24.8.4/en-US/LibreOffice_24.8.4_Win_x86-64.msi"; filename = "LibreOffice.msi"; checksum = "" },
+    @{ url = "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/a1aedc61f794eb66fbcdad6aaf8a8be3/microsoft-jdk-21.0.6-windows-x64.zip"; filename = "jdk.zip"; checksum = "" }
 )
 
 # Function to log messages

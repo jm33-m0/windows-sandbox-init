@@ -8,12 +8,13 @@ Param(
 Set-ExecutionPolicy Unrestricted -Scope LocalMachine
 
 # Paths
-$logFile = "$Home\Desktop\init_log.txt"
+$desktopPath = [System.IO.Path]::Combine($env:USERPROFILE, "Desktop")
+$logFile = "$desktopPath\init_log.txt"
 $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
-$ghidraPath = "$env:USERPROFILE\Desktop\ghidra"
-$diePath = "$env:USERPROFILE\Desktop\detect-it-easy"
-$sysinternalsPath = "$env:USERPROFILE\Desktop\Sysinternals"
-$x64dbgPath = "$env:USERPROFILE\Desktop\x64dbg"
+$ghidraPath = "$desktopPath\ghidra"
+$diePath = "$desktopPath\detect-it-easy"
+$sysinternalsPath = "$desktopPath\Sysinternals"
+$x64dbgPath = "$desktopPath\x64dbg"
 
 # cd to the script directory
 Set-Location -Path $ScriptPath -ErrorAction Stop
@@ -62,13 +63,19 @@ function config_explorer() {
     }
 }
 
+function get_basename {
+    param (
+        [string] $filePath
+    )
+    return [System.IO.Path]::GetFileNameWithoutExtension($filePath)
+}
+
 function create_shortcut {
     param (
         [string] $targetPath,
         [string] $name, 
         [string] $iconPath
     )
-    $desktopPath = [System.IO.Path]::Combine($env:USERPROFILE, "Desktop")
     $shortcutPath = [System.IO.Path]::Combine($desktopPath, $name + ".lnk")
     $wshShell = New-Object -ComObject WScript.Shell
     $shortcut = $wshShell.CreateShortcut($shortcutPath)
@@ -85,7 +92,7 @@ function install_msi {
         [string] $msiPath
     )
     log_message "Installing MSI: $msiPath"
-    Start-Process -FilePath "msiexec.exe" -ArgumentList "/quiet", "/norestart", "/i", $msiPath -Wait
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/passive", "/norestart", "/a", $msiPath
     if (check_error "Failed to install $msiPath") {
         log_message "Installed $msiPath"
     }
@@ -96,7 +103,7 @@ function install_nsis {
         [string] $nsisPath
     )
     log_message "Installing $nsisPath"
-    Start-Process -FilePath $nsisPath -ArgumentList "/S" -Wait
+    Start-Process -FilePath $nsisPath -ArgumentList "/S"
     if (check_error "Failed to install $nsisPath") {
         log_message "Installed $nsisPath"
     }
@@ -114,9 +121,15 @@ function process_files {
     }
 }
 
-function show_completion_message {
+function show_message_box {
+    param (
+        [string] $message,
+        [string] $title = "Message",
+        [string] $button = "OK",
+        [string] $icon = "Information"
+    )
     Add-Type -AssemblyName PresentationFramework
-    [System.Windows.MessageBox]::Show('All tasks are completed.', 'Completion', 'OK', 'Information')
+    [System.Windows.MessageBox]::Show($message, $title, $button, $icon)
 }
 
 # Create a shortcut for MALWARE directory on the desktop
@@ -138,7 +151,7 @@ create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "No
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
-    $destination = Join-Path "$Home\Desktop" ($_.BaseName)
+    $destination = Join-Path $desktopPath ($_.BaseName)
     Start-Process -FilePath $sevenZipPath -ArgumentList "x", $_.FullName, "-o$destination", "-y" -Wait
     if (check_error "Failed to unzip $($_.FullName) to $destination using 7-Zip") {
         log_message "Unzipped $($_.FullName) to $destination using 7-Zip"
@@ -163,6 +176,7 @@ if (check_error "Failed to copy lauch.properties to Ghidra directory") {
 create_shortcut -targetPath "$ghidraPath\ghidraRun.bat" -iconPath "$ghidraPath\support\ghidra.ico" -name "Ghidra"
 
 # Configure x64dbg
+show_message_box -message "x64dbg will be configured next. Please follow the instructions in the GUI window."
 Start-Process -FilePath "$x64dbgPath\release\x96dbg.exe" -Wait
 
 # Configure DIE
@@ -174,5 +188,23 @@ create_shortcut -targetPath "$sysinternalsPath/procmon64.exe" -name "Process Mon
 create_shortcut -targetPath "$sysinternalsPath/tcpview64.exe" -name "TCPView"
 create_shortcut -targetPath "$sysinternalsPath/autoruns64.exe" -name "Autoruns"
 
+# Configure JDK
+# Set JAVA_HOME environment variable
+$javaHome = "$desktopPath\jdk"
+[Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "User")
+if (check_error "Failed to set JAVA_HOME environment variable") {
+    log_message "Set JAVA_HOME environment variable to $javaHome"
+}
+
+# Add JAVA_HOME to the system PATH
+$path = [System.Environment]::GetEnvironmentVariable("Path", "User")
+if ($path -notlike "*$javaHome*") {
+    $newPath = "$path;$javaHome\bin"
+    [System.Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+    if (check_error "Failed to add JAVA_HOME to system PATH") {
+        log_message "Added JAVA_HOME to system PATH"
+    }
+}
+
 log_message "Script completed."
-show_completion_message
+show_message_box -message 'All tasks are completed.' -title 'Completion' -button 'OK' -icon 'Information'
