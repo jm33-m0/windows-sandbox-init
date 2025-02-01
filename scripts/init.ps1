@@ -99,14 +99,14 @@ function prompt_yes_no {
     return $result -eq [System.Windows.MessageBoxResult]::Yes
 }
 
-function install_portable {
+function prompt_install {
     param (
         [string] $nsisPath,
         [string] $message,
         [string] $title
     )
+    Copy-Item -Path $nsisPath -Destination $desktopPath -Force
     if (-not (prompt_yes_no -message $message -title $title)) {
-        Copy-Item -Path $nsisPath -Destination $desktopPath -Force
         return $false
     }
     return $true
@@ -120,16 +120,22 @@ function install_nsis {
 
     $arguments = "/S"
 
+    # AutoHotkey
+    if ($nsisPath -like "*AutoHotKey.exe") { 
+        # already installed
+        return
+    }
+
     # needs manual intervention
     if ($nsisPath -like "*Wireshark.exe") { 
-        if (-not (install_portable -nsisPath $nsisPath -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
+        if (-not (prompt_install -nsisPath $nsisPath -message "Do you want to install Wireshark?" -title "Install Wireshark")) {
             log_message "Skipped installation of Wireshark."
             return
         }
         $arguments = ""
     }
     if ($nsisPath -like "*LibreOffice.exe") {
-        if (-not (install_portable -nsisPath $nsisPath -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
+        if (-not (prompt_install -nsisPath $nsisPath -message "Do you want to install LibreOffice?" -title "Install LibreOffice")) {
             log_message "Skipped installation of LibreOffice."
             return
         }
@@ -139,11 +145,23 @@ function install_nsis {
     if ($arguments -eq "/S") {
         # install silently
         log_message "Installing $nsisPath silently."
-        Start-Process -FilePath $nsisPath -ArgumentList $arguments
+        Start-Process -FilePath $nsisPath -ArgumentList $arguments -Wait
     }
     else {
-        # install manually
-        Start-Process -FilePath $nsisPath
+        # install manually using AHK script
+        $ahkScript = @"
+SetTitleMatchMode, 2
+Run, $desktopPath\$([System.IO.Path]::GetFileName($nsisPath))
+WinWait, Setup
+Send, !n
+WinWait, Finish
+Send, !f
+"@
+        $ahkScriptPath = [System.IO.Path]::Combine($desktopPath, "install.ahk")
+        $ahkScript | Out-File -FilePath $ahkScriptPath -Force
+        Start-Process -FilePath "C:\Program Files\AutoHotkey\AutoHotkey.exe" -ArgumentList $ahkScriptPath -Wait
+        Remove-Item -Path $ahkScriptPath -Force
+        Remove-Item -Path "$desktopPath\$([System.IO.Path]::GetFileName($nsisPath))" -Force
     }
     if (check_error "Failed to install $nsisPath") {
         log_message "Installed $nsisPath"
@@ -214,6 +232,9 @@ function npp_setup {
 
 # Create a shortcut for MALWARE directory on the desktop
 create_shortcut -targetPath $RootPath\MALWARE -name "MALWARE"
+
+# Install AutoHotkey
+Start-Process -FilePath "$PackagePath\AutoHotKey.exe" -ArgumentList "/silent" -Wait
 
 # Run all EXE files in the source directory with /S argument
 process_files -path $PackagePath -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
