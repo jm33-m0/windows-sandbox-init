@@ -92,7 +92,7 @@ function install_msi {
         [string] $msiPath
     )
     log_message "Installing MSI: $msiPath"
-    Start-Process -FilePath "msiexec.exe" -ArgumentList "/passive", "/norestart", "/a", $msiPath
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", $msiPath, "/qn", "/norestart"
     if (check_error "Failed to install $msiPath") {
         log_message "Installed $msiPath"
     }
@@ -142,9 +142,9 @@ process_files -path $PackagePath -filter "*.exe" -callback_function { param($fil
 process_files -path $PackagePath -filter "*.msi" -callback_function { param($filePath) install_msi $filePath }
 
 # Config Notepad++ with config.xml
-Copy-Item -Path $RootPath\npp_config\config.xml -Destination "$env:APPDATA\Notepad++\config.xml" -Force
-if (check_error "Failed to copy config.xml to Notepad++ directory") {
-    log_message "Copied config.xml to Notepad++ directory."
+Copy-Item -Path $RootPath\npp_config\* -Destination "$env:APPDATA\Notepad++" -Force
+if (check_error "Failed to copy config files to Notepad++ directory") {
+    log_message "Copied config files to Notepad++ directory."
 }
 # Make shortcut for Notepad++ on desktop
 create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "Notepad++"
@@ -169,9 +169,9 @@ Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe" -name "7-Zip"
 
 # Configure Ghidra
-Copy-Item -Path $RootPath\ghidra_config\lauch.properties -Destination "$ghidraPath\support" -Force
-if (check_error "Failed to copy lauch.properties to Ghidra directory") {
-    log_message "Copied lauch.properties to Ghidra directory."
+Copy-Item -Path $RootPath\ghidra_config\* -Destination "$ghidraPath\support" -Force
+if (check_error "Failed to copy config files to Ghidra directory") {
+    log_message "Copied config files to Ghidra directory."
 }
 create_shortcut -targetPath "$ghidraPath\ghidraRun.bat" -iconPath "$ghidraPath\support\ghidra.ico" -name "Ghidra"
 
