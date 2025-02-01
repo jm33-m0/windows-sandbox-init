@@ -238,6 +238,9 @@ create_shortcut -targetPath "$desktopPath\ImHex\imhex-gui.exe" -name "ImHex"
 New-Item -Path "$desktopPath\ImHex\config" -ItemType Directory -Force
 Copy-Item $RootPath\imhex_config\settings.json -Destination "$desktopPath\ImHex\config" -Force
 
+# Configure Wireshark
+create_shortcut -targetPath "C:\Program Files\Wireshark\Wireshark.exe" -name "Wireshark"
+
 log_message "Script completed."
 
 # Calculate time spent
