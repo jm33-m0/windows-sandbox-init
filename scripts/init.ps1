@@ -96,8 +96,8 @@ function install_nsis {
     log_message "Installing $nsisPath"
     
     # needs manual intervention
-    if ($nsisPath -like "npcap.exe") { 
-        Copy-Item -Path $nsisPath -Destination $desktopPath -Force
+    if ($nsisPath -like "*Wireshark.exe") { 
+        create_shortcut -targetPath $nsisPath -name "Wireshark Installer"
         return
     }
     $arguments = "/S"
@@ -155,30 +155,29 @@ function set_default_app {
     }
 }
 
+function npp_setup {
+    # Config Notepad++ with config.xml
+    Copy-Item -Path $RootPath\npp_config\* -Destination "$env:APPDATA\Notepad++" -Force
+    if (check_error "Failed to copy config files to Notepad++ directory") {
+        log_message "Copied config files to Notepad++ directory."
+    }
+    # Make shortcut for Notepad++ on desktop
+    create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "Notepad++"
+
+    # Make Notepad++ the default app for .txt and .ini files
+    set_default_app -extension ".txt" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+    set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+}
+
 # Create a shortcut for MALWARE directory on the desktop
 create_shortcut -targetPath $RootPath\MALWARE -name "MALWARE"
 
 # Run all EXE files in the source directory with /S argument
 process_files -path $PackagePath -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
+npp_setup
 
 # Install all MSI files in the source directory
 process_files -path $PackagePath -filter "*.msi" -callback_function { param($filePath) install_msi $filePath }
-
-# Config Notepad++ with config.xml
-Copy-Item -Path $RootPath\npp_config\* -Destination "$env:APPDATA\Notepad++" -Force
-if (check_error "Failed to copy config files to Notepad++ directory") {
-    log_message "Copied config files to Notepad++ directory."
-}
-# Make shortcut for Notepad++ on desktop
-create_shortcut -targetPath "C:\Program Files\Notepad++\notepad++.exe" -name "Notepad++"
-
-# Make Notepad++ the default app for .txt and .ini files
-set_default_app -extension ".txt" -appPath "C:\Program Files\Notepad++\notepad++.exe"
-set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++.exe"
-
-# Configure Explorer
-# config_explorer
-# restart_explorer
 
 # Unzip all ZIP files in the source directory to the desktop using 7-Zip
 Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
@@ -253,6 +252,6 @@ log_message "Script completed."
 # Calculate time spent
 $scriptEndTime = Get-Date
 $timeSpent = $scriptEndTime - $scriptStartTime
-$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds. You will need to run npcap.exe manually if you need to use Wireshark."
+$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds. You will need to run Wireshark.exe to install Wireshark manually because its npcap dependency cannot be silently installed."
 
 show_message_box -message $timeSpentMessage -title 'Completion' -button 'OK' -icon 'Information'
