@@ -229,7 +229,7 @@ if ($path -notlike "*$javaHome*") {
 }
 
 # Configure LibreOffice
-create_shortcut -targetPath "$desktopPath\LibreOffice\LibreOfficeBasePortable.exe" -name "LibreOffice"
+create_shortcut -targetPath "$desktopPath\LibreOffice\LibreOfficePortable.exe" -name "LibreOffice"
 
 log_message "Script completed."
 show_message_box -message 'All tasks are completed, some MSI packages might still be installed in the background' -title 'Completion' -button 'OK' -icon 'Information'
