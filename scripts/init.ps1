@@ -288,6 +288,13 @@ log_message "Script completed."
 # Calculate time spent
 $scriptEndTime = Get-Date
 $timeSpent = $scriptEndTime - $scriptStartTime
-$timeSpentMessage = "Installation completed in $($timeSpent.Hours) hours, $($timeSpent.Minutes) minutes, and $($timeSpent.Seconds) seconds. Some packages can be manually installed."
+$timeSpentMessage = "Installation completed in "
+if ($timeSpent.Hours -gt 0) {
+    $timeSpentMessage += "$($timeSpent.Hours) hours, "
+}
+if ($timeSpent.Minutes -gt 0) {
+    $timeSpentMessage += "$($timeSpent.Minutes) minutes, "
+}
+$timeSpentMessage += "$($timeSpent.Seconds) seconds. Some packages can be manually installed."
 
 show_message_box -message $timeSpentMessage -title 'Completion' -button 'OK' -icon 'Information'
