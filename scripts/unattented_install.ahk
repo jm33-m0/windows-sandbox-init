@@ -1,8 +1,12 @@
+#Requires AutoHotkey v2
 AutoInstall(installerPath) {
     Run(installerPath)
 
     ; continuously click controls with specific text if window is active
     loop {
+        ; ensure the target process window always has focus
+        if WinExist("ahk_exe " . processName)
+            WinActivate("ahk_exe " . processName)
         if !ProcessExist(processName)
             break
         if WinActive("ahk_exe " . processName) {
