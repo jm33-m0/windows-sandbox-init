@@ -1,0 +1,20 @@
+<Configuration>
+    <AudioInput>Disable</AudioInput>
+    <ClipboardRedirection>Disable</ClipboardRedirection>
+    <MemoryInMB>8192</MemoryInMB>
+    <Networking>Enable</Networking>
+    <PrinterRedirection>Disable</PrinterRedirection>
+    <ProtectedClient>Enable</ProtectedClient>
+    <vGPU>Enable</vGPU>
+    <VideoInput>Disable</VideoInput>
+    <LogonCommand>
+        <Command>C:\\tooling\\scripts\\init.bat</Command>
+    </LogonCommand>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>.\</HostFolder>
+            <SandboxFolder>C:\tooling</SandboxFolder>
+            <ReadOnly>true</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+</Configuration>

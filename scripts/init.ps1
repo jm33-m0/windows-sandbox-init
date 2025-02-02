@@ -41,6 +41,34 @@ function check_error {
     return $true
 }
 
+function network_setup {
+    $tun2socks = "$desktopPath\tun2socks\tun2socks-windows-amd64-v3.exe"
+    Copy-Item -Path "$desktopPath\wintun\bin\amd64\wintun.dll" -Destination "$desktopPath\tun2socks" -Force
+    $tunIp = "10.9.8.7"
+    $gateway = "10.9.8.1" # fake, we just need a gateway to set the default route
+    log_message "Setting up TUN device with IP $tunIp and gateway $gateway."
+
+    # Check if a default route already exists
+    $existingRoute = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -ErrorAction SilentlyContinue
+    if ($existingRoute) {
+        log_message "Default route exists; aborting network setup."
+        return
+    }
+
+    # Start tun2socks to forward traffic from TUN device to SOCKS5 proxy on local port 1080
+    Start-Process -FilePath $tun2socks -ArgumentList "-device", "wintun", "-proxy", "socks5://127.0.0.1:1080" -NoNewWindow
+
+    # Wait for tun2socks to start
+    Start-Sleep -Seconds 2
+
+    # Set IP address and gateway
+    $tunInterface = Get-NetAdapter | Where-Object { $_.InterfaceDescription -eq "WireGuard Tunnel" }
+    $tunInterface | New-NetIPAddress -IPAddress $tunIp -PrefixLength 24 -DefaultGateway $gateway
+    if (check_error "Failed to create TUN device") {
+        log_message "TUN device created successfully with IP $tunIp and gateway $gateway."
+    }
+}
+
 log_message "Script started."
 
 # Start timer
@@ -280,6 +308,13 @@ create_shortcut -targetPath "$desktopPath\LibreOfficePortable\LibreOfficePortabl
 
 # Configure Wireshark
 create_shortcut -targetPath "$desktopPath\WiresharkPortable64\WiresharkPortable64.exe" -name "Wireshark"
+
+
+# Configure network
+network_setup
+
+# Create a shortcut for powershell.exe
+create_shortcut -targetPath "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -name "PowerShell"
 
 # Calculate time spent
 $scriptEndTime = Get-Date
