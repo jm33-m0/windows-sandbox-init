@@ -8,6 +8,8 @@ This project aims to automatically configure a Windows Sanbox for malware analys
 
 Make sure you have Windows Sandbox enabled.
 
+Customize `packages.json` if you need to remove or add packages.
+
 1. Run `download_pkgs.ps1` to download all packages for offline use, and update the checksums for later verification.
 2. Start `start.wsb`.
 3. Generally it should be done in 2 minutes.
