@@ -60,6 +60,12 @@
         "sha256sum": "D37ED10C7E1C86117BE52A3B2F9B5500B8FFAD335AAC85EB1DBE73B4DF359EF2"
     },
     {
+        "url": "https://npcap.com/dist/npcap-1.80.exe",
+        "filename": "npcap.exe",
+        "bootstrap": false,
+        "sha256sum": "AC4F26D7D9F994D6F04141B2266F02682DEF51AF63C09C96A7268552C94A6535"
+    },
+    {
         "url": "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/a1aedc61f794eb66fbcdad6aaf8a8be3/microsoft-jdk-21.0.6-windows-x64.zip",
         "filename": "jdk.zip",
         "bootstrap": false,
