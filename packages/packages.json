@@ -1,0 +1,68 @@
+[
+    {
+        "url":  "https://www.voidtools.com/Everything-1.4.1.1026.x64-Setup.exe",
+        "filename":  "Everything.exe",
+        "bootstrap":  false,
+        "sha256sum":  "DAE32A49B6052F0EC70895DD4E35B2B26222F7F4C19C36D9D309033E2FB622BC"
+    },
+    {
+        "url":  "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.7.6/npp.8.7.6.Installer.x64.exe",
+        "filename":  "npp.exe",
+        "bootstrap":  false,
+        "sha256sum":  "457E9434E87E1BBD305B2EA0D37BCA0B324410BFEEFF107449E6388FDB2CC183"
+    },
+    {
+        "url":  "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.2.1_build/ghidra_11.2.1_PUBLIC_20241105.zip",
+        "filename":  "ghidra.zip",
+        "bootstrap":  false,
+        "sha256sum":  "CE4DB5117DA0FBAF8F33863FEC4F40902F754F06B68945A59FB1C0F9B1BC461C"
+    },
+    {
+        "url":  "https://github.com/horsicq/DIE-engine/releases/download/3.10/die_win64_portable_3.10_x64.zip",
+        "filename":  "detect-it-easy.zip",
+        "bootstrap":  false,
+        "sha256sum":  "6E84AC8D3ABDFBA60078A36FA7F6B492B20C2AF2C502E0A4579F41367AC37C80"
+    },
+    {
+        "url":  "https://download.sysinternals.com/files/SysinternalsSuite.zip",
+        "filename":  "Sysinternals.zip",
+        "bootstrap":  false,
+        "sha256sum":  "C6C6FC3A965A8E4BC0943EE4586CCE86789913DDD25E808BFB61426776253863"
+    },
+    {
+        "url":  "https://github.com/x64dbg/x64dbg/releases/download/snapshot/snapshot_2025-01-17_12-45.zip",
+        "filename":  "x64dbg.zip",
+        "bootstrap":  false,
+        "sha256sum":  "82E5522263FFBE2CA3D6FDF21F8C59D8321E507A8B805F58BCEC0AF4C9EBE162"
+    },
+    {
+        "url":  "https://github.com/x64dbg/x64dbg/releases/download/snapshot/symbols-snapshot_2025-01-17_12-45.zip",
+        "filename":  "x64dbg_symbols.zip",
+        "bootstrap":  false,
+        "sha256sum":  "922BF8A9FE453A5F2A40D2F1E991E69AE093FE113701AE6C3ED115F275B24A28"
+    },
+    {
+        "url":  "https://download.documentfoundation.org/libreoffice/portable/24.8.2/LibreOfficePortable_24.8.2_MultilingualStandard.paf.exe",
+        "filename":  "LibreOffice.exe",
+        "bootstrap":  false,
+        "sha256sum":  "293264AEC4F821A39616C00DB39B10B6473A3D024F0EB5914F8036F189B432D9"
+    },
+    {
+        "url":  "https://github.com/WerWolv/ImHex/releases/download/v1.36.2/imhex-1.36.2-Windows-Portable-NoGPU-x86_64.zip",
+        "filename":  "imhex.zip",
+        "bootstrap":  false,
+        "sha256sum":  "CC48EBD95DAE6E1F55E3B45CF26D952EC4CF761F1391B1EECD87695D1C152714"
+    },
+    {
+        "url":  "https://2.na.dl.wireshark.org/win64/Wireshark-4.4.3-x64.exe",
+        "filename":  "Wireshark.exe",
+        "bootstrap":  false,
+        "sha256sum":  "44524F1ABD1AC0F550E77516527D70A2AB4A1D88273947608E3200A42F792F2C"
+    },
+    {
+        "url":  "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/a1aedc61f794eb66fbcdad6aaf8a8be3/microsoft-jdk-21.0.6-windows-x64.zip",
+        "filename":  "jdk.zip",
+        "bootstrap":  false,
+        "sha256sum":  "FA8F1EB53E9062895DCF7547ABB22D7A96DB40E1BE1565BC3A61C2E399DBDA03"
+    }
+]

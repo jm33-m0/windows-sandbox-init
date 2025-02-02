@@ -1,32 +1,42 @@
-# Change to the packages directory
-Set-Location -Path "..\packages" -ErrorAction Stop
+# Current directory: root of the repository
+$cwd = Get-Location -ErrorAction Stop
+$logFile = "$cwd\download_pkgs.log"
 
-# URLs and filenames
-$files = @(
-    @{ url = "https://www.voidtools.com/Everything-1.4.1.1026.x64-Setup.exe"; filename = "Everything.exe"; checksum = "" },
-    @{ url = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.7.6/npp.8.7.6.Installer.x64.exe"; filename = "npp.exe"; checksum = "" },
-    @{ url = "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.2.1_build/ghidra_11.2.1_PUBLIC_20241105.zip"; filename = "ghidra.zip"; checksum = "" },
-    @{ url = "https://github.com/horsicq/DIE-engine/releases/download/3.10/die_win64_portable_3.10_x64.zip"; filename = "detect-it-easy.zip"; checksum = "" },
-    @{ url = "https://download.sysinternals.com/files/SysinternalsSuite.zip"; filename = "Sysinternals.zip"; checksum = "" },
-    @{ url = "https://github.com/ip7z/7zip/releases/download/24.09/7z2409-x64.exe"; filename = "7z.exe"; checksum = "" },
-    @{ url = "https://github.com/x64dbg/x64dbg/releases/download/snapshot/snapshot_2025-01-17_12-45.zip"; filename = "x64dbg.zip"; checksum = "" },
-    @{ url = "https://github.com/x64dbg/x64dbg/releases/download/snapshot/symbols-snapshot_2025-01-17_12-45.zip"; filename = "x64dbg_symbols.zip"; checksum = "" },
-    @{ url = "https://download.documentfoundation.org/libreoffice/portable/24.8.2/LibreOfficePortable_24.8.2_MultilingualStandard.paf.exe"; filename = "LibreOffice.exe"; checksum = "" },
-    @{ url = "https://github.com/WerWolv/ImHex/releases/download/v1.36.2/imhex-1.36.2-Windows-Portable-NoGPU-x86_64.zip"; filename = "imhex.zip"; checksum = "" },
-    @{ url = "https://2.na.dl.wireshark.org/win64/Wireshark-4.4.3-x64.exe"; filename = "Wireshark.exe"; checksum = "" },
-    @{ url = "https://www.autohotkey.com/download/ahk-v2.exe"; filename = "AutoHotKey.exe"; checksum = "" },
-    @{ url = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.5.2/tun2socks-windows-amd64-v3.zip"; filename = "tun2socks.zip"; checksum = "" },
-    @{ url = "https://www.wintun.net/builds/wintun-0.14.1.zip"; filename = "wintun.zip"; checksum = "" },
-    @{ url = "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/a1aedc61f794eb66fbcdad6aaf8a8be3/microsoft-jdk-21.0.6-windows-x64.zip"; filename = "jdk.zip"; checksum = "" }
-)
+# Change to the packages directory
+$packagePath = "..\packages"
+Set-Location -Path $packagePath -ErrorAction Stop
+$packagePath = Get-Location -ErrorAction Stop
+$manifestPath = "$packagePath\packages.json"
+
+# Define bootstrap package info mapping filename to URL and checksum
+$bootstrapPackageInfo = @{
+    "7z.exe"         = @{
+        url       = "https://github.com/ip7z/7zip/releases/download/24.09/7z2409-x64.exe"
+        sha256sum = "BDD1A33DE78618D16EE4CE148B849932C05D0015491C34887846D431D29F308E"
+    }
+    "AutoHotKey.exe" = @{
+        url       = "https://www.autohotkey.com/download/ahk-v2.exe"
+        sha256sum = "FD55129CBD356F49D2151E0A8B9662D90D2DBBB9579CC2410FDE38DF94787A3A"
+    }
+    "tun2socks.zip"  = @{
+        url       = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.5.2/tun2socks-windows-amd64-v3.zip"
+        sha256sum = "427FABCB0798815EA87800466F168023502FC0C12A17F45B40C078BAC25FBAC5"
+    }
+    "wintun.zip"     = @{
+        url       = "https://www.wintun.net/builds/wintun-0.14.1.zip"
+        sha256sum = "07C256185D6EE3652E09FA55C0B673E2624B565E02C4B9091C79CA7D2F24EF51"
+    }
+}
 
 # Function to log messages
 function logMessage {
     param (
-        [string]$message
+        [string] $message
     )
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Output "$timestamp - $message"
+    $logEntry = "$timestamp - $message"
+    $logEntry | Out-File -FilePath $logFile -Append
+    Write-Verbose $logEntry
 }
 
 # Function to calculate file checksum
@@ -38,31 +48,7 @@ function getFileChecksum {
     return $hash.Hash.ToUpper()
 }
 
-# Function to load .sha256 files and update checksum dictionary
-function loadChecksums {
-    param (
-        [string]$directory
-    )
-    logMessage "Loading checksums from .sha256 files in $directory"
-    Get-ChildItem -Path $directory -Filter *.sha256 | ForEach-Object {
-        $filePath = $_.FullName
-        $content = Get-Content -Path $filePath
-        $checksum = $content[0]
-        $filename = $content[1]
-        if ($checksum -and $filename) {
-            $file = $files | Where-Object { $_.filename -eq $filename }
-            if ($file) {
-                $file.checksum = $checksum
-                logMessage "Loaded checksum: $filename - $checksum"
-            }
-        }
-        else {
-            logMessage "Invalid checksum file: $filePath"
-        }
-    }
-}
-
-# Function to download file if it does not exist or checksum does not match
+# Modified Function to download file; returns new checksum if downloaded (no *.sha256 usage)
 function downloadFile {
     param (
         [string]$url,
@@ -74,30 +60,42 @@ function downloadFile {
         $existingChecksum = getFileChecksum -filePath $output
         if ($existingChecksum -eq $checksum.ToUpper()) {
             logMessage "File already exists and checksum matches: $output"
-            return
+            return $null
         }
         else {
             logMessage "Checksum mismatch for $output. Redownloading..."
         }
     }
+    logMessage "Downloading $output from $url"
     Invoke-WebRequest -Uri $url -OutFile $output
     logMessage "Downloaded: $output"
-    $checksum_file = "$output.sha256"
-    $checksum = getFileChecksum -filePath $output
-    Set-Content -Path $checksum_file -Value "$checksum`n$output"
-    logMessage "Checksum '$checksum' written to: $checksum_file"
+    $newChecksum = getFileChecksum -filePath $output
+    logMessage "Checksum for $output : $newChecksum"
+    return $newChecksum
 }
 
-# Load checksums from .sha256 files
-try {
-    loadChecksums -directory "."
-}
-catch {
-    logMessage "Failed to load checksums. Aborting. Error: $_"
-    exit 1
+# Download bootstrap packages
+foreach ($filename in $bootstrapPackageInfo.Keys) {
+    $info = $bootstrapPackageInfo[$filename]
+    logMessage "Downloading bootstrap package: $filename"
+    $newChecksum = downloadFile -url $info.url -output $filename -checksum $info.sha256sum
+    if ($newChecksum -eq $info.sha256sum) {
+        logMessage "Checksum mismatch for $filename, download failed"
+    }
+    else {
+        logMessage "Checksum matches for $filename, download successful"
+    }
 }
 
-# Download files
+# Download files from JSON manifest and update manifest checksum if needed
+logMessage "Downloading packages"
+$files = Get-Content -Path $manifestPath | ConvertFrom-Json -ErrorAction Stop
 foreach ($file in $files) {
-    downloadFile -url $file.url -output $file.filename -checksum $file.checksum
+    $newChecksum = downloadFile -url $file.url -output $file.filename -checksum $file.sha256sum
+    if ($newChecksum) {
+        $file.sha256sum = $newChecksum 
+    }
 }
+
+# Change back to the root directory
+Set-Location -Path $cwd -ErrorAction Stop

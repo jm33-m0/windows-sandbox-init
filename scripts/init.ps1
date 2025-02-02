@@ -26,7 +26,7 @@ function log_message {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logEntry = "$timestamp - $message"
     $logEntry | Out-File -FilePath $logFile -Append
-    Write-Output $logEntry
+    Write-Verbose $logEntry
 }
 
 function check_error {
