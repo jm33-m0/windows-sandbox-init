@@ -11,7 +11,7 @@ AutoInstall(installerPath) {
             break
         if WinActive("ahk_exe " . processName) {
             ; try controls with text containing target keywords (case insensitive)
-            candidates := ["OK", "Next", "Install", "Agree", "Finish", "Exit", "Yes", "Done"]
+            candidates := ["OK", "Next", "Install", "Agree", "Finish", "Exit", "Yes", "Done", "Noted", "Continue"]
             controlList := WinGetControls("ahk_exe " . processName)
             for index, ctrl in controlList {
                 try {
