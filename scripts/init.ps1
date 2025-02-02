@@ -279,7 +279,7 @@ Copy-Item $RootPath\imhex_config\settings.json -Destination "$desktopPath\ImHex\
 create_shortcut -targetPath "$desktopPath\LibreOfficePortable\LibreOfficePortable.exe" -name "LibreOffice"
 
 # Configure Wireshark
-create_shortcut -targetPath "$desktopPath\WiresharkPortable\WiresharkPortable64.exe" -name "Wireshark"
+create_shortcut -targetPath "$desktopPath\WiresharkPortable64\WiresharkPortable64.exe" -name "Wireshark"
 
 # Calculate time spent
 $scriptEndTime = Get-Date
