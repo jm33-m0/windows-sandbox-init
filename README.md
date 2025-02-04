@@ -13,6 +13,8 @@ Customize `packages.json` if you need to remove or add packages.
 1. Run `download_pkgs.ps1` to download all packages for offline use, and update the checksums for later verification.
 2. Start `start.wsb`.
 3. Generally it should be done in 2 minutes.
+4. Put malware samples in `./MALWARE` and you will find it on desktop.
+5. Try with the provided sample, password is `infected` (from VX Underground).
 
 Note:
 
