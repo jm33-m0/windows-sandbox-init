@@ -198,7 +198,8 @@ function set_default_app {
         New-Item -Path $extensionKey -Force | Out-Null
         log_message "Created registry path: $extensionKey"
     }
-    Set-ItemProperty -Path $extensionKey -Name "(Default)" -Value "Notepad++_file"
+    $appIdentifier = [System.IO.Path]::GetFileNameWithoutExtension($appPath)
+    Set-ItemProperty -Path $extensionKey -Name "(Default)" -Value "${appIdentifier}_file"
     if (check_error "Failed to set default app for $extension") {
         log_message "Set default app for $extension"
     }
@@ -236,7 +237,6 @@ Start-Process -FilePath "$PackagePath\AutoHotKey.exe" -ArgumentList "/silent" -W
 
 # Run all EXE files in the source directory with /S argument
 process_files -path $PackagePath -filter "*.exe" -callback_function { param($filePath) install_nsis $filePath }
-npp_setup
 
 # Install all MSI files in the source directory
 process_files -path $PackagePath -filter "*.msi" -callback_function { param($filePath) install_msi $filePath }
@@ -259,6 +259,19 @@ Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
 }
 # Make shortcut for 7-Zip on desktop
 create_shortcut -targetPath "C:\Program Files\7-Zip\7zFM.exe" -name "7-Zip"
+
+# Set 7-Zip as default app for common archive formats
+set_default_app -extension ".7z" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".zip" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".tar" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".gz" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".rar" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".iso" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".cab" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".arj" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+
+# Configure Notepad++
+npp_setup
 
 # Configure Ghidra
 Copy-Item -Path $RootPath\ghidra_config\* -Destination "$ghidraPath\support" -Force
