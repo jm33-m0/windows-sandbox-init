@@ -70,5 +70,11 @@
         "filename": "jdk.zip",
         "bootstrap": false,
         "sha256sum": "FA8F1EB53E9062895DCF7547ABB22D7A96DB40E1BE1565BC3A61C2E399DBDA03"
+    },
+    {
+        "url": "https://github.com/keepassxreboot/keepassxc/releases/download/2.7.9/KeePassXC-2.7.9-Win64.zip",
+        "filename": "keepassxc.zip",
+        "bootstrap": false,
+        "sha256sum": "FEBCE8934A02F2B0EB13F2A3EB586321F374A87C5E7C85D5A06729A868799781"
     }
 ]
