@@ -79,7 +79,7 @@ foreach ($filename in $bootstrapPackageInfo.Keys) {
     $info = $bootstrapPackageInfo[$filename]
     logMessage "Downloading bootstrap package: $filename"
     $newChecksum = downloadFile -url $info.url -output $filename -checksum $info.sha256sum
-    if ($newChecksum -eq $info.sha256sum) {
+    if ($newChecksum -ne $info.sha256sum) {
         logMessage "Checksum mismatch for $filename, download failed"
     }
     else {
