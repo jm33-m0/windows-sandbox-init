@@ -138,7 +138,7 @@ function install_nsis {
     }
 
     # Use AHK installer
-    if (($nsisPath -like "*Wireshark.exe") -or ($nsisPath -like "*npcap.exe") -or ($nsisPath -like "*LibreOffice.exe")) { 
+    if (($nsisPath -like "*Wireshark.exe") -or ($nsisPath -like "*npcap.exe")) { 
         Copy-Item -Path $nsisPath -Destination $desktopPath -Force
         $arguments = ""
     }
@@ -401,9 +401,6 @@ catch {
 create_shortcut -targetPath "$desktopPath\ImHex\imhex-gui.exe" -name "ImHex"
 New-Item -Path "$desktopPath\ImHex\config" -ItemType Directory -Force
 Copy-Item $RootPath\imhex_config\settings.json -Destination "$desktopPath\ImHex\config" -Force
-
-# Configure LibreOffice
-create_shortcut -targetPath "$desktopPath\LibreOfficePortable\LibreOfficePortable.exe" -name "LibreOffice"
 
 # Configure Wireshark
 create_shortcut -targetPath "$desktopPath\WiresharkPortable64\WiresharkPortable64.exe" -name "Wireshark"
