@@ -247,21 +247,31 @@ function set_default_app {
 function refresh_file_associations {
     # Refresh the shell icon cache and notify the system of changes
     try {
-        # Use rundll32 to refresh file associations
-        Start-Process -FilePath "rundll32.exe" -ArgumentList "shell32.dll,SHChangeNotify,0x8000000,0,0,0" -Wait -NoNewWindow
-        log_message "Refreshed file associations and shell icon cache"
-        
-        # Also try to refresh the desktop
+        # Try to call SHChangeNotify directly via P/Invoke instead of rundll32 to avoid RunDLL popup
         $code = @'
-        [System.Runtime.InteropServices.DllImport("shell32.dll")]
-        public static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+using System;
+using System.Runtime.InteropServices;
+namespace Win32 {
+    public static class Shell32 {
+        [DllImport("shell32.dll")]
+        public static extern void SHChangeNotify(UInt32 wEventId, UInt32 uFlags, IntPtr dwItem1, IntPtr dwItem2);
+    }
+}
 '@
-        Add-Type -MemberDefinition $code -Namespace Win32 -Name Shell32
+        Add-Type -TypeDefinition $code -ErrorAction Stop
         [Win32.Shell32]::SHChangeNotify(0x8000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
-        log_message "Sent SHChangeNotify to refresh file associations"
+        log_message "Refreshed file associations and sent SHChangeNotify"
     }
     catch {
-        log_message "Warning: Could not refresh file associations cache: $($_.Exception.Message)"
+        # Fallback: attempt rundll32 with correct argument format but keep it hidden and non-interactive
+        try {
+            $args = "shell32.dll,SHChangeNotify 0x8000000,0"
+            Start-Process -FilePath "rundll32.exe" -ArgumentList $args -Wait -NoNewWindow -WindowStyle Hidden
+            log_message "Refreshed file associations using rundll32 fallback"
+        }
+        catch {
+            log_message "Warning: Could not refresh file associations cache: $($_.Exception.Message)"
+        }
     }
 }
 
