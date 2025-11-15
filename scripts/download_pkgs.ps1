@@ -24,6 +24,22 @@ logMessage "========== Starting download process =========="
 logMessage "Working directory: $packagePath"
 logMessage "Manifest path: $manifestPath"
 
+# Clean up any leftover aria2 control files from previous interrupted downloads
+$controlFiles = Get-ChildItem -Path $packagePath -Filter "*.aria2" -ErrorAction SilentlyContinue
+if ($controlFiles.Count -gt 0) {
+    logMessage "Found $($controlFiles.Count) leftover aria2 control files from previous downloads"
+    foreach ($controlFile in $controlFiles) {
+        $originalFile = $controlFile.FullName.Replace('.aria2', '')
+        if (Test-Path -Path $originalFile) {
+            logMessage "Preserving incomplete download: $($controlFile.Name)"
+        }
+        else {
+            logMessage "Removing orphaned control file: $($controlFile.Name)"
+            Remove-Item -Path $controlFile.FullName -Force
+        }
+    }
+}
+
 # Define bootstrap package info mapping filename to URL and checksum
 $bootstrapPackageInfo = @{
     "aria2.zip"      = @{
@@ -114,6 +130,7 @@ function downloadFile {
         [string]$aria2cPath = $null
     )
     logMessage "Checking if $output needs to be downloaded"
+    $shouldResume = $false
     if (Test-Path -Path $output) {
         $existingChecksum = getFileChecksum -filePath $output
         if ($existingChecksum -eq $checksum.ToUpper()) {
@@ -121,32 +138,59 @@ function downloadFile {
             return $null
         }
         else {
-            logMessage "Checksum mismatch for $output. Redownloading..."
-            Remove-Item -Path $output -Force
+            logMessage "File exists but checksum mismatch, will attempt to resume download: $output"
+            $shouldResume = $true
         }
     }
     
     logMessage "Downloading $output from $url"
     
     if ($aria2cPath -and (Test-Path -Path $aria2cPath)) {
-        # Use aria2c with multi-threading
-        logMessage "Using aria2c for download with multi-threading"
+        # Use aria2c with multi-threading and resumable downloads
+        if ($shouldResume) {
+            logMessage "Using aria2c for resumable download with multi-threading"
+        }
+        else {
+            logMessage "Using aria2c for download with multi-threading"
+        }
+        
         $aria2cArgs = @(
             "--max-connection-per-server=16",
-            "--split=16",
+            "--split=16", 
             "--min-split-size=1M",
-            "--max-concurrent-downloads=16",
-            "--continue=true",
-            "--auto-file-renaming=false",
-            "--allow-overwrite=true",
+            "--max-concurrent-downloads=1",  # Set to 1 for individual file downloads
+            "--continue=true",               # Enable resume functionality
+            "--remote-time=true",            # Set file modification time from server
+            "--auto-file-renaming=false",    # Don't rename files automatically
+            "--allow-overwrite=true",        # Allow overwriting existing files
+            "--retry-wait=3",                # Wait 3 seconds between retries
+            "--max-tries=5",                 # Retry up to 5 times
+            "--timeout=60",                  # Connection timeout
+            "--connect-timeout=30",          # Connection establishment timeout
+            "--summary-interval=10",         # Show progress every 10 seconds
+            "--console-log-level=notice",    # Show important messages
             "--out=$output",
             $url
         )
         
+        # Check for existing .aria2 control file (indicates incomplete download)
+        $controlFile = "$output.aria2"
+        if (Test-Path -Path $controlFile) {
+            logMessage "Found existing aria2 control file, resuming previous download"
+        }
+        
         $process = Start-Process -FilePath $aria2cPath -ArgumentList $aria2cArgs -Wait -PassThru -NoNewWindow
         if ($process.ExitCode -ne 0) {
             logMessage "ERROR: aria2c download failed with exit code $($process.ExitCode)"
+            # Don't delete the file or control file to allow manual resume later
+            logMessage "Partial download preserved for potential manual resume"
             throw "aria2c download failed"
+        }
+        
+        # Clean up control file after successful download
+        if (Test-Path -Path $controlFile) {
+            Remove-Item -Path $controlFile -Force
+            logMessage "Cleaned up aria2 control file after successful download"
         }
     }
     else {
@@ -155,9 +199,24 @@ function downloadFile {
         Invoke-WebRequest -Uri $url -OutFile $output
     }
     
+    # Verify the download completed successfully
+    if (-not (Test-Path -Path $output)) {
+        logMessage "ERROR: Download failed - output file does not exist: $output"
+        throw "Download failed - output file does not exist"
+    }
+    
     logMessage "Downloaded: $output"
     $newChecksum = getFileChecksum -filePath $output
     logMessage "Checksum for $output : $newChecksum"
+    
+    # Verify checksum if we have the expected value
+    if ($checksum -and $newChecksum.ToUpper() -ne $checksum.ToUpper()) {
+        logMessage "WARNING: Downloaded file checksum does not match expected value"
+        logMessage "Expected: $($checksum.ToUpper())"
+        logMessage "Got: $($newChecksum.ToUpper())"
+        logMessage "File may be corrupted or server version has changed"
+    }
+    
     return $newChecksum
 }
 
