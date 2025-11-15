@@ -192,24 +192,76 @@ function set_default_app {
         [string] $extension,
         [string] $appPath
     )
+    $appName = [System.IO.Path]::GetFileNameWithoutExtension($appPath)
+    $progId = "${appName}.AssocFile.${extension.TrimStart('.')}"
+    
+    # Set the file extension association
     $extensionKey = "HKCU:\Software\Classes\$extension"
-    $appKey = "HKCU:\Software\Classes\$extension\shell\open\command"
     if (-not (Test-Path $extensionKey)) {
         New-Item -Path $extensionKey -Force | Out-Null
         log_message "Created registry path: $extensionKey"
     }
-    $appIdentifier = [System.IO.Path]::GetFileNameWithoutExtension($appPath)
-    Set-ItemProperty -Path $extensionKey -Name "(Default)" -Value "${appIdentifier}_file"
+    Set-ItemProperty -Path $extensionKey -Name "(Default)" -Value $progId
     if (check_error "Failed to set default app for $extension") {
-        log_message "Set default app for $extension"
+        log_message "Set default app for $extension to $progId"
     }
-    if (-not (Test-Path $appKey)) {
-        New-Item -Path $appKey -Force | Out-Null
-        log_message "Created registry path: $appKey"
+    
+    # Create the ProgID
+    $progIdKey = "HKCU:\Software\Classes\$progId"
+    if (-not (Test-Path $progIdKey)) {
+        New-Item -Path $progIdKey -Force | Out-Null
+        log_message "Created registry path: $progIdKey"
     }
-    Set-ItemProperty -Path $appKey -Name "(Default)" -Value "`"$appPath`" `"%1`""
+    Set-ItemProperty -Path $progIdKey -Name "(Default)" -Value "$appName File"
+    
+    # Set the shell\open\command
+    $commandKey = "$progIdKey\shell\open\command"
+    if (-not (Test-Path $commandKey)) {
+        New-Item -Path $commandKey -Force | Out-Null
+        log_message "Created registry path: $commandKey"
+    }
+    Set-ItemProperty -Path $commandKey -Name "(Default)" -Value "`"$appPath`" `"%1`""
     if (check_error "Failed to set open command for $extension") {
         log_message "Set open command for $extension"
+    }
+    
+    # Register with Windows' UserChoice (more reliable method)
+    $userChoiceKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\$extension\UserChoice"
+    if (-not (Test-Path $userChoiceKey)) {
+        New-Item -Path $userChoiceKey -Force | Out-Null
+        log_message "Created registry path: $userChoiceKey"
+    }
+    Set-ItemProperty -Path $userChoiceKey -Name "ProgId" -Value $progId -ErrorAction SilentlyContinue
+    
+    # Also set in the OpenWithProgids for better compatibility
+    $openWithKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\$extension\OpenWithProgids"
+    if (-not (Test-Path $openWithKey)) {
+        New-Item -Path $openWithKey -Force | Out-Null
+        log_message "Created registry path: $openWithKey"
+    }
+    Set-ItemProperty -Path $openWithKey -Name $progId -Value ([byte[]]@()) -Type Binary -ErrorAction SilentlyContinue
+    
+    log_message "Completed file association setup for $extension with $appName"
+}
+
+function refresh_file_associations {
+    # Refresh the shell icon cache and notify the system of changes
+    try {
+        # Use rundll32 to refresh file associations
+        Start-Process -FilePath "rundll32.exe" -ArgumentList "shell32.dll,SHChangeNotify,0x8000000,0,0,0" -Wait -NoNewWindow
+        log_message "Refreshed file associations and shell icon cache"
+        
+        # Also try to refresh the desktop
+        $code = @'
+        [System.Runtime.InteropServices.DllImport("shell32.dll")]
+        public static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+'@
+        Add-Type -MemberDefinition $code -Namespace Win32 -Name Shell32
+        [Win32.Shell32]::SHChangeNotify(0x8000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
+        log_message "Sent SHChangeNotify to refresh file associations"
+    }
+    catch {
+        log_message "Warning: Could not refresh file associations cache: $($_.Exception.Message)"
     }
 }
 
@@ -225,7 +277,10 @@ function npp_setup {
     # Make Notepad++ the default app for .txt and .ini files
     set_default_app -extension ".txt" -appPath "C:\Program Files\Notepad++\notepad++.exe"
     set_default_app -extension ".ini" -appPath "C:\Program Files\Notepad++\notepad++.exe"
-    restart_explorer
+    set_default_app -extension ".log" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+    set_default_app -extension ".cfg" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+    set_default_app -extension ".conf" -appPath "C:\Program Files\Notepad++\notepad++.exe"
+    refresh_file_associations
 }
 
 # Create a shortcut for MALWARE directory on the desktop
@@ -269,6 +324,10 @@ set_default_app -extension ".rar" -appPath "C:\Program Files\7-Zip\7zFM.exe"
 set_default_app -extension ".iso" -appPath "C:\Program Files\7-Zip\7zFM.exe"
 set_default_app -extension ".cab" -appPath "C:\Program Files\7-Zip\7zFM.exe"
 set_default_app -extension ".arj" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".bz2" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".xz" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+set_default_app -extension ".lzma" -appPath "C:\Program Files\7-Zip\7zFM.exe"
+refresh_file_associations
 
 # Configure Notepad++
 npp_setup
@@ -355,6 +414,9 @@ network_setup
 
 # Create a shortcut for powershell.exe
 create_shortcut -targetPath "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -name "PowerShell"
+
+# Final refresh of file associations to ensure all changes take effect
+refresh_file_associations
 
 # Calculate time spent
 $scriptEndTime = Get-Date
