@@ -294,21 +294,48 @@ create_shortcut -targetPath "$sysinternalsPath/tcpview64.exe" -name "TCPView"
 create_shortcut -targetPath "$sysinternalsPath/autoruns64.exe" -name "Autoruns"
 
 # Configure JDK
-# Set JAVA_HOME environment variable
+# Set JAVA_HOME environment variable for both User and System
 $javaHome = "$desktopPath\jdk"
+
+# Set JAVA_HOME for User
 [Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "User")
-if (check_error "Failed to set JAVA_HOME environment variable") {
-    log_message "Set JAVA_HOME environment variable to $javaHome"
+if (check_error "Failed to set JAVA_HOME environment variable for User") {
+    log_message "Set JAVA_HOME environment variable to $javaHome for User"
 }
 
-# Add JAVA_HOME to the system PATH
-$path = [System.Environment]::GetEnvironmentVariable("Path", "User")
-if ($path -notlike "*$javaHome*") {
-    $newPath = "$path;$javaHome\bin"
-    [System.Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-    if (check_error "Failed to add JAVA_HOME to system PATH") {
-        log_message "Added JAVA_HOME to system PATH"
+# Set JAVA_HOME for System (requires admin privileges)
+try {
+    [Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "Machine")
+    log_message "Set JAVA_HOME environment variable to $javaHome for System"
+}
+catch {
+    log_message "Warning: Could not set JAVA_HOME for System scope. This may require administrator privileges."
+}
+
+# Add JAVA_HOME to the User PATH
+$userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$javaHome*") {
+    $newUserPath = "$userPath;$javaHome\bin"
+    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+    if (check_error "Failed to add JAVA_HOME to User PATH") {
+        log_message "Added JAVA_HOME to User PATH"
     }
+}
+
+# Add JAVA_HOME to the System PATH (requires admin privileges)
+try {
+    $systemPath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    if ($systemPath -notlike "*$javaHome*") {
+        $newSystemPath = "$systemPath;$javaHome\bin"
+        [System.Environment]::SetEnvironmentVariable("Path", $newSystemPath, "Machine")
+        log_message "Added JAVA_HOME to System PATH"
+    }
+    else {
+        log_message "JAVA_HOME already exists in System PATH"
+    }
+}
+catch {
+    log_message "Warning: Could not add JAVA_HOME to System PATH. This may require administrator privileges."
 }
 
 # Configure ImHex
