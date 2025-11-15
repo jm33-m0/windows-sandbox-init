@@ -10,21 +10,25 @@ $manifestPath = "$packagePath\packages.json"
 
 # Define bootstrap package info mapping filename to URL and checksum
 $bootstrapPackageInfo = @{
+    "aria2.zip"      = @{
+        url       = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip"
+        sha256sum = "67d015301eef0b612191212d564c5bb0a14b5b9c4796b76454276a4d28d9b288"
+    }
     "7z.exe"         = @{
-        url       = "https://github.com/ip7z/7zip/releases/download/24.09/7z2409-x64.exe"
-        sha256sum = "BDD1A33DE78618D16EE4CE148B849932C05D0015491C34887846D431D29F308E"
+        url       = "https://github.com/ip7z/7zip/releases/download/25.01/7z2501-x64.exe"
+        sha256sum = "78afa2a1c773caf3cf7edf62f857d2a8a5da55fb0fff5da416074c0d28b2b55f"
     }
     "AutoHotKey.exe" = @{
         url       = "https://www.autohotkey.com/download/ahk-v2.exe"
-        sha256sum = "FD55129CBD356F49D2151E0A8B9662D90D2DBBB9579CC2410FDE38DF94787A3A"
+        sha256sum = "fd55129cbd356f49d2151e0a8b9662d90d2dbbb9579cc2410fde38df94787a3a"
     }
     "tun2socks.zip"  = @{
-        url       = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.5.2/tun2socks-windows-amd64-v3.zip"
-        sha256sum = "427FABCB0798815EA87800466F168023502FC0C12A17F45B40C078BAC25FBAC5"
+        url       = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-amd64-v3.zip"
+        sha256sum = "fa10f679bf7e6c2380af72b588cd0f61cb7c382b86f991d76eb9b96f4e104352"
     }
     "wintun.zip"     = @{
         url       = "https://www.wintun.net/builds/wintun-0.14.1.zip"
-        sha256sum = "07C256185D6EE3652E09FA55C0B673E2624B565E02C4B9091C79CA7D2F24EF51"
+        sha256sum = "07c256185d6ee3652e09fa55c0b673e2624b565e02c4b9091c79ca7d2f24ef51"
     }
 }
 

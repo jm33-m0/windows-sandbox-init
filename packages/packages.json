@@ -1,74 +1,68 @@
 [
     {
-        "url": "https://www.voidtools.com/Everything-1.4.1.1026.x64-Setup.exe",
+        "url": "https://www.voidtools.com/Everything-1.4.1.1030.x64-Setup.exe",
         "filename": "Everything.exe",
         "bootstrap": false,
-        "sha256sum": "DAE32A49B6052F0EC70895DD4E35B2B26222F7F4C19C36D9D309033E2FB622BC"
+        "sha256sum": "553fd2477e830f686d140d8e7ff79fc3d69239a754c85be4cf7e45a625a50396"
     },
     {
-        "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.7.6/npp.8.7.6.Installer.x64.exe",
+        "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.8.7/npp.8.8.7.Installer.x64.exe",
         "filename": "npp.exe",
         "bootstrap": false,
-        "sha256sum": "457E9434E87E1BBD305B2EA0D37BCA0B324410BFEEFF107449E6388FDB2CC183"
+        "sha256sum": "49d2531893b09cb6a8e3429ca0a734e871a2d96fa2575c0eec3229d383fa233a"
     },
     {
-        "url": "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.2.1_build/ghidra_11.2.1_PUBLIC_20241105.zip",
+        "url": "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.4.2_build/ghidra_11.4.2_PUBLIC_20250826.zip",
         "filename": "ghidra.zip",
         "bootstrap": false,
-        "sha256sum": "CE4DB5117DA0FBAF8F33863FEC4F40902F754F06B68945A59FB1C0F9B1BC461C"
+        "sha256sum": "795a02076af16257bd6f3f4736c4fc152ce9ff1f95df35cd47e2adc086e037a6"
     },
     {
         "url": "https://github.com/horsicq/DIE-engine/releases/download/3.10/die_win64_portable_3.10_x64.zip",
         "filename": "detect-it-easy.zip",
         "bootstrap": false,
-        "sha256sum": "6E84AC8D3ABDFBA60078A36FA7F6B492B20C2AF2C502E0A4579F41367AC37C80"
+        "sha256sum": "6e84ac8d3abdfba60078a36fa7f6b492b20c2af2c502e0a4579f41367ac37c80"
     },
     {
         "url": "https://download.sysinternals.com/files/SysinternalsSuite.zip",
         "filename": "Sysinternals.zip",
         "bootstrap": false,
-        "sha256sum": "C6C6FC3A965A8E4BC0943EE4586CCE86789913DDD25E808BFB61426776253863"
+        "sha256sum": "4061ad6ab8e6b2e5c9e9ab25dedbc4de25d96aa5f1afbdb14a6232e0d3642dd2"
     },
     {
-        "url": "https://github.com/x64dbg/x64dbg/releases/download/snapshot/snapshot_2025-01-17_12-45.zip",
+        "url": "https://github.com/x64dbg/x64dbg/releases/download/2025.08.19/snapshot_2025-08-19_19-40.zip",
         "filename": "x64dbg.zip",
         "bootstrap": false,
-        "sha256sum": "82E5522263FFBE2CA3D6FDF21F8C59D8321E507A8B805F58BCEC0AF4C9EBE162"
+        "sha256sum": "cc614caf34f9fe1ec156f045129db3a513c35593ff1ee647bc819a352dc12271"
     },
     {
-        "url": "https://github.com/x64dbg/x64dbg/releases/download/snapshot/symbols-snapshot_2025-01-17_12-45.zip",
+        "url": "https://github.com/x64dbg/x64dbg/releases/download/2025.08.19/symbols-snapshot_2025-08-19_19-40.zip",
         "filename": "x64dbg_symbols.zip",
         "bootstrap": false,
-        "sha256sum": "922BF8A9FE453A5F2A40D2F1E991E69AE093FE113701AE6C3ED115F275B24A28"
+        "sha256sum": "af1b605369fc7ce91a02f9da1b1fd6ccaca53328617cf4c35a7a18637694c28e"
     },
     {
-        "url": "https://download.documentfoundation.org/libreoffice/portable/24.8.2/LibreOfficePortable_24.8.2_MultilingualStandard.paf.exe",
-        "filename": "LibreOffice.exe",
-        "bootstrap": false,
-        "sha256sum": "293264AEC4F821A39616C00DB39B10B6473A3D024F0EB5914F8036F189B432D9"
-    },
-    {
-        "url": "https://github.com/WerWolv/ImHex/releases/download/v1.36.2/imhex-1.36.2-Windows-Portable-NoGPU-x86_64.zip",
+        "url": "https://github.com/WerWolv/ImHex/releases/download/v1.37.4/imhex-1.37.4-Windows-Portable-NoGPU-x86_64.zip",
         "filename": "imhex.zip",
         "bootstrap": false,
-        "sha256sum": "CC48EBD95DAE6E1F55E3B45CF26D952EC4CF761F1391B1EECD87695D1C152714"
+        "sha256sum": "3ac1888bb45271b36fd8c8533e02017334005a10db3f6fa9046e3126ff96f435"
     },
     {
-        "url": "https://2.na.dl.wireshark.org/win64/WiresharkPortable64_4.4.3.paf.exe",
+        "url": "https://2.na.dl.wireshark.org/win64/WiresharkPortable64_latest.paf.exe",
         "filename": "Wireshark.exe",
         "bootstrap": false,
-        "sha256sum": "D37ED10C7E1C86117BE52A3B2F9B5500B8FFAD335AAC85EB1DBE73B4DF359EF2"
+        "sha256sum": "9f3d82eabd4739a953e55cd1bdc8e547ef6d0848557eae24730c8ee8fc2671bf"
     },
     {
-        "url": "https://npcap.com/dist/npcap-1.80.exe",
+        "url": "https://npcap.com/dist/npcap-1.84.exe",
         "filename": "npcap.exe",
         "bootstrap": false,
-        "sha256sum": "AC4F26D7D9F994D6F04141B2266F02682DEF51AF63C09C96A7268552C94A6535"
+        "sha256sum": "90dcda7d4902daf983db653793cf6f91eeaa2de60cdd5fe9c27cdb7da3928910"
     },
     {
-        "url": "https://download.visualstudio.microsoft.com/download/pr/e2393a1d-1011-45c9-a507-46b696f6f2a4/a1aedc61f794eb66fbcdad6aaf8a8be3/microsoft-jdk-21.0.6-windows-x64.zip",
+        "url": "https://aka.ms/download-jdk/microsoft-jdk-25.0.1-windows-x64.zip",
         "filename": "jdk.zip",
         "bootstrap": false,
-        "sha256sum": "FA8F1EB53E9062895DCF7547ABB22D7A96DB40E1BE1565BC3A61C2E399DBDA03"
+        "sha256sum": "d56bed274adb2b16deea2dce3f21718d1b0dcdbe2253bc5cc332b525cbcd1fd1"
     }
 ]
