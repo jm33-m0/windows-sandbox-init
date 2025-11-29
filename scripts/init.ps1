@@ -227,6 +227,90 @@ import site
     log_message "Python embedded setup completed successfully"
 }
 
+function Setup-BurpSuiteScaling {
+    log_message "Configuring Burp Suite UI scaling for Windows Sandbox/RDP environment"
+    
+    # Get system DPI scaling factor
+    Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class DPI {
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetDC(IntPtr hWnd);
+    
+    [DllImport("gdi32.dll")]
+    public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+    
+    [DllImport("user32.dll")]
+    public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+    
+    public static float GetScalingFactor() {
+        IntPtr desktop = GetDC(IntPtr.Zero);
+        int dpi = GetDeviceCaps(desktop, 88); // LOGPIXELSX
+        ReleaseDC(IntPtr.Zero, desktop);
+        return dpi / 96.0f; // 96 DPI is 100% scaling
+    }
+}
+"@
+    
+    try {
+        $scalingFactor = [DPI]::GetScalingFactor()
+        log_message "Detected system scaling factor: $($scalingFactor * 100)%"
+    }
+    catch {
+        $scalingFactor = 1.25 # Default to 125% for typical RDP/Sandbox scenarios
+        log_message "Could not detect scaling, using default 125% scaling factor"
+    }
+    
+    # Burp Suite user preferences directory
+    $burpConfigDir = "$env:USERPROFILE\.BurpSuite"
+    if (-not (Test-Path $burpConfigDir)) {
+        New-Item -Path $burpConfigDir -ItemType Directory -Force | Out-Null
+        log_message "Created Burp Suite configuration directory"
+    }
+    
+    # Calculate appropriate UI scale (Burp uses percentage values)
+    $uiScalePercent = [Math]::Round($scalingFactor * 100)
+    
+    # Create Burp Suite user preferences JSON
+    $burpPrefs = @{
+        "user_options" = @{
+            "display" = @{
+                "user_interface" = @{
+                    "look_and_feel"                = "Nimbus"
+                    "font_size"                    = 12
+                    "ui_scale"                     = $uiScalePercent
+                    "high_resolution_display_mode" = "auto"
+                }
+                "character_sets" = @{
+                    "mode" = "recognize_automatically"
+                }
+            }
+        }
+    } | ConvertTo-Json -Depth 10
+    
+    $prefsFile = Join-Path $burpConfigDir "UserConfigCommunity.json"
+    $burpPrefs | Out-File -FilePath $prefsFile -Encoding UTF8
+    log_message "Created Burp Suite user preferences with $uiScalePercent% UI scaling"
+    
+    # Also set Windows compatibility settings for Burp Suite executable
+    $burpExe = "C:\Program Files\BurpSuiteCommunity\BurpSuiteCommunity.exe"
+    if (Test-Path $burpExe) {
+        try {
+            # Set high DPI awareness in registry for better scaling behavior
+            $regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
+            if (-not (Test-Path $regPath)) {
+                New-Item -Path $regPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $regPath -Name $burpExe -Value "~ HIGHDPIAWARE" -ErrorAction SilentlyContinue
+            log_message "Set Windows high DPI awareness for Burp Suite"
+        }
+        catch {
+            log_message "Warning: Could not set Windows DPI compatibility settings"
+        }
+    }
+}
+
 function process_files {
     param (
         [string] $path,
@@ -486,9 +570,8 @@ create_shortcut -targetPath "$desktopPath\WiresharkPortable64\WiresharkPortable6
 # Configure Burp Suite with system scaling
 $burpPath = "C:\Program Files\BurpSuiteCommunity\BurpSuiteCommunity.exe"
 if (Test-Path $burpPath) {
-    # JVM arguments for system scaling and better performance
-    $burpArguments = "-Dsun.java2d.dpiaware=false -Dswing.aatext=true -Dawt.useSystemAAFontSettings=on"
-    create_shortcut -targetPath $burpPath -name "Burp Suite" -arguments $burpArguments
+    Setup-BurpSuiteScaling
+    create_shortcut -targetPath $burpPath -name "Burp Suite"
     log_message "Configured Burp Suite with system scaling support"
 }
 else {
