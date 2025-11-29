@@ -128,44 +128,55 @@ function install_nsis {
         [string] $nsisPath
     )
 
-    $arguments = "/S"
     $packageName = get_basename -filePath $nsisPath
+    log_message "Processing installer: $packageName"
 
-    # AutoHotkey
-    if ($nsisPath -like "*AutoHotKey.exe") { 
-        # already installed
-        return
+    # Handle specific installer types
+    switch -Wildcard ($nsisPath) {
+        "*AutoHotKey.exe" { 
+            log_message "AutoHotkey already processed separately, skipping."
+            return 
+        }
+        "*burp.exe" {
+            log_message "Installing Burp Suite Community Edition with unattended parameters."
+            Start-Process -FilePath $nsisPath -ArgumentList "-q", "-overwrite" -Wait
+            break
+        }
+        { $_ -like "*Wireshark.exe" -or $_ -like "*npcap.exe" } {
+            log_message "Installing $packageName using AutoHotkey script (requires user interaction)."
+            Copy-Item -Path $nsisPath -Destination $desktopPath -Force
+            Install-WithAutoHotkey -installerPath ([System.IO.Path]::Combine($desktopPath, "$packageName.exe")) -processName "$packageName.exe"
+            break
+        }
+        default {
+            log_message "Installing $packageName silently with /S parameter."
+            Start-Process -FilePath $nsisPath -ArgumentList "/S" -Wait
+        }
     }
 
-    # Burp Suite Community Edition
-    if ($nsisPath -like "*burp.exe") {
-        $arguments = "-q -overwrite"
-    }
-
-    # Use AHK installer
-    if (($nsisPath -like "*Wireshark.exe") -or ($nsisPath -like "*npcap.exe")) { 
-        Copy-Item -Path $nsisPath -Destination $desktopPath -Force
-        $arguments = ""
-    }
-
-    if ($arguments -eq "/S") {
-        # install silently
-        log_message "Installing $nsisPath silently."
-        Start-Process -FilePath $nsisPath -ArgumentList $arguments -Wait
-    }
-    else {
-        log_message "Installing $nsisPath"
-        # install using AHKv2 script "unattended_install.ahk"
-        $ahkPath = "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"
-        $pkgPath = [System.IO.Path]::Combine($desktopPath, $packageName + ".exe")
-        $procName = $packageName + ".exe"
-        $ahkScriptPath = Join-Path $ScriptPath "unattented_install.ahk"
-        Start-Process -FilePath $ahkPath -ArgumentList $ahkScriptPath, $pkgPath, $procName -Wait -ErrorAction Stop
-        log_message "Command executed: $ahkPath $ahkScriptPath $pkgPath $procName"
-        Remove-Item -Path $pkgPath -Force
-    }
     if (check_error "Failed to install $nsisPath") {
-        log_message "Installed $nsisPath"
+        log_message "Successfully installed $packageName"
+    }
+}
+
+function Install-WithAutoHotkey {
+    param (
+        [string] $installerPath,
+        [string] $processName
+    )
+
+    $ahkPath = "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"
+    $ahkScriptPath = Join-Path $ScriptPath "unattented_install.ahk"
+    
+    try {
+        Start-Process -FilePath $ahkPath -ArgumentList $ahkScriptPath, $installerPath, $processName -Wait -ErrorAction Stop
+        log_message "AutoHotkey installation completed for: $installerPath"
+    }
+    finally {
+        if (Test-Path $installerPath) {
+            Remove-Item -Path $installerPath -Force
+            log_message "Cleaned up temporary installer: $installerPath"
+        }
     }
 }
 
