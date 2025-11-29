@@ -60,6 +60,24 @@
         "sha256sum": "90dcda7d4902daf983db653793cf6f91eeaa2de60cdd5fe9c27cdb7da3928910"
     },
     {
+        "url": "https://joplinapp.org/download",
+        "filename": "joplin.exe",
+        "bootstrap": false,
+        "sha256sum": "e79957677b4530514470f39b770c32abb889a2d21c66d1b6282d49f31e9a4461"
+    },
+    {
+        "url": "https://portswigger.net/burp/releases/download?product=community&version=2025.10.6&type=WindowsX64",
+        "filename": "burp.exe",
+        "bootstrap": false,
+        "sha256sum": "d2c461c5458b4845e8b138f6b025105036eb472692569e3deb386029d7054423"
+    },
+    {
+        "url": "https://www.python.org/ftp/python/3.14.0/python-3.14.0-amd64.exe",
+        "filename": "python.exe",
+        "bootstrap": false,
+        "sha256sum": "52ceb249f65009d936e6504f97cce42870c11358cb6e48825e893f54e11620aa"
+    },
+    {
         "url": "https://aka.ms/download-jdk/microsoft-jdk-25.0.1-windows-x64.zip",
         "filename": "jdk.zip",
         "bootstrap": false,
