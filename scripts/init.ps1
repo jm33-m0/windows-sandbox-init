@@ -89,7 +89,8 @@ function create_shortcut {
     param (
         [string] $targetPath,
         [string] $name, 
-        [string] $iconPath
+        [string] $iconPath,
+        [string] $arguments
     )
     $shortcutPath = [System.IO.Path]::Combine($desktopPath, $name + ".lnk")
     $wshShell = New-Object -ComObject WScript.Shell
@@ -97,6 +98,9 @@ function create_shortcut {
     $shortcut.TargetPath = $targetPath
     if ($iconPath) {
         $shortcut.IconLocation = $iconPath
+    }
+    if ($arguments) {
+        $shortcut.Arguments = $arguments
     }
     $shortcut.Save()
     log_message "Created shortcut for $targetPath on desktop with name $name."
@@ -479,6 +483,17 @@ Copy-Item $RootPath\imhex_config\settings.json -Destination "$desktopPath\ImHex\
 # Configure Wireshark
 create_shortcut -targetPath "$desktopPath\WiresharkPortable64\WiresharkPortable64.exe" -name "Wireshark"
 
+# Configure Burp Suite with system scaling
+$burpPath = "C:\Program Files\BurpSuiteCommunity\BurpSuiteCommunity.exe"
+if (Test-Path $burpPath) {
+    # JVM arguments for system scaling and better performance
+    $burpArguments = "-Dsun.java2d.dpiaware=false -Dswing.aatext=true -Dawt.useSystemAAFontSettings=on"
+    create_shortcut -targetPath $burpPath -name "Burp Suite" -arguments $burpArguments
+    log_message "Configured Burp Suite with system scaling support"
+}
+else {
+    log_message "Warning: Burp Suite not found at expected path: $burpPath"
+}
 
 # Configure network
 network_setup
