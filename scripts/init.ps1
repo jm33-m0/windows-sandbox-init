@@ -137,6 +137,11 @@ function install_nsis {
         return
     }
 
+    # Burp Suite Community Edition
+    if ($nsisPath -like "*burp.exe") {
+        $arguments = "-q -overwrite"
+    }
+
     # Use AHK installer
     if (($nsisPath -like "*Wireshark.exe") -or ($nsisPath -like "*npcap.exe")) { 
         Copy-Item -Path $nsisPath -Destination $desktopPath -Force
