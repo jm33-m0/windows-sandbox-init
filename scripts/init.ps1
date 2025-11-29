@@ -142,11 +142,7 @@ function install_nsis {
             Start-Process -FilePath $nsisPath -ArgumentList "-q", "-overwrite", "-splash" -Wait
             break
         }
-        "*python.exe" {
-            log_message "Installing Python with passive installation."
-            Start-Process -FilePath $nsisPath -ArgumentList "/passive" -Wait
-            break
-        }
+
         { $_ -like "*Wireshark.exe" -or $_ -like "*npcap.exe" } {
             log_message "Installing $packageName using AutoHotkey script (requires user interaction)."
             Copy-Item -Path $nsisPath -Destination $desktopPath -Force
@@ -183,6 +179,48 @@ function Install-WithAutoHotkey {
             log_message "Cleaned up temporary installer: $installerPath"
         }
     }
+}
+
+function Setup-PythonEmbedded {
+    param (
+        [string] $pythonPath
+    )
+
+    log_message "Configuring Python embedded installation at: $pythonPath"
+    
+    # Create python._pth file to enable site-packages and proper module loading
+    $pythonPthContent = @"
+python314.zip
+.
+Lib\site-packages
+
+# Uncomment to run site.main() automatically
+import site
+"@
+    
+    $pthFilePath = Join-Path $pythonPath "python._pth"
+    $pythonPthContent | Out-File -FilePath $pthFilePath -Encoding UTF8
+    log_message "Created python._pth file for proper module loading"
+    
+    # Add Python to PATH for current session and future sessions
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($userPath -notlike "*$pythonPath*") {
+        $newUserPath = "$userPath;$pythonPath;$pythonPath\Scripts"
+        [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+        log_message "Added Python embedded to User PATH"
+    }
+    
+    # Create desktop shortcut for Python
+    create_shortcut -targetPath "$pythonPath\python.exe" -name "Python"
+    
+    # Create Scripts directory for pip installations
+    $scriptsPath = Join-Path $pythonPath "Scripts"
+    if (-not (Test-Path $scriptsPath)) {
+        New-Item -Path $scriptsPath -ItemType Directory -Force | Out-Null
+        log_message "Created Scripts directory for Python packages"
+    }
+    
+    log_message "Python embedded setup completed successfully"
 }
 
 function process_files {
@@ -341,6 +379,11 @@ Get-ChildItem -Path $PackagePath -Filter *.zip | ForEach-Object {
         Get-ChildItem -Path $innerFolder | Move-Item -Destination $destination -Force
         Remove-Item -Path $innerFolder -Force
         log_message "Moved contents of $innerFolder to $destination"
+    }
+    
+    # Special handling for Python embedded ZIP
+    if ($_.BaseName -eq "python") {
+        Setup-PythonEmbedded -pythonPath $destination
     }
 }
 # Make shortcut for 7-Zip on desktop
