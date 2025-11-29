@@ -139,7 +139,12 @@ function install_nsis {
         }
         "*burp.exe" {
             log_message "Installing Burp Suite Community Edition with unattended parameters."
-            Start-Process -FilePath $nsisPath -ArgumentList "-q", "-overwrite" -Wait
+            Start-Process -FilePath $nsisPath -ArgumentList "-q", "-overwrite", "-splash" -Wait
+            break
+        }
+        "*python.exe" {
+            log_message "Installing Python with passive installation."
+            Start-Process -FilePath $nsisPath -ArgumentList "/passive" -Wait
             break
         }
         { $_ -like "*Wireshark.exe" -or $_ -like "*npcap.exe" } {
