@@ -60,7 +60,7 @@
         "sha256sum": "90dcda7d4902daf983db653793cf6f91eeaa2de60cdd5fe9c27cdb7da3928910"
     },
     {
-        "url": "https://joplinapp.org/download",
+        "url": "https://github.com/laurent22/joplin/releases/download/v3.4.12/Joplin-Setup-3.4.12.exe",
         "filename": "joplin.exe",
         "bootstrap": false,
         "sha256sum": "e79957677b4530514470f39b770c32abb889a2d21c66d1b6282d49f31e9a4461"
